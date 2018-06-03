@@ -5,11 +5,12 @@
         <title>REST API Creator</title>
         <link rel="stylesheet" type="text/css" href="../../static/main_app/sb_admin.css" />
         <!-- Bootstrap core CSS-->
-        <link href="../../static/main_app/bootstrap.min.css" rel="stylesheet">
+        <link href="../../static/main_app/bootstrap.css" rel="stylesheet">
         <!-- Custom fonts for this template-->
         <link href="../../static/main_app/font-awesome.min.css" rel="stylesheet" type="text/css">
         <!-- Page level plugin CSS-->
         <link href="../../static/main_app/dataTables.bootstrap4.css" rel="stylesheet">
+        {% block extrastyle %}{% endblock %}
     </head>
     <body class="fixed-nav sticky-footer bg-dark" id="page-top">
         <!-- Navigation-->
@@ -46,8 +47,7 @@
 
       <div class="content-wrapper">
         <div class="container-fluid">
-            {% block content %}
-            {% endblock %}
+            {% block content %}{% endblock %}
         </div>
       </div>
         <!-- /.container-fluid-->
@@ -95,5 +95,7 @@
         <!-- Custom scripts for this page-->
         <script src="js/sb-admin-datatables.min.js"></script>
         <script src="js/sb-admin-charts.min.js"></script>
+        {% block extraScript %}{% endblock %}
       </div>
     </body>
+</html>
