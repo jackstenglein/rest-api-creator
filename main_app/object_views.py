@@ -3,6 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.forms import formset_factory
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
+from django.db.utils import IntegrityError
 
 from .models import Object, Project, ProjectSerializer
 from .forms import ObjectForm, AttributeForm
@@ -56,6 +57,16 @@ def create_object(request, project_id):
         return JsonResponse({"message": "Object created"})
     except Project.DoesNotExist as e:
         return JsonResponse({"error": "Project id=" + str(project_id) + " does not exist"}, status=400)
+    except KeyError as e:
+        new_object.delete()
+        return JsonResponse({"error": "Missing `" + e.args[0] + "` attribute parameter"}, status=400)
+    except IntegrityError as e:
+        if "object.name" in e.args[0]:
+            error = "Object with this name already exists for this project"
+        else:
+            new_object.delete()
+            error = "Duplicate attribute names for this object"
+        return JsonResponse({"error": error}, status=400)
 
 @csrf_exempt
 def objects(request, project=None, object=None):

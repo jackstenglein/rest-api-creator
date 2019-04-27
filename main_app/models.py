@@ -21,7 +21,6 @@ class Project(models.Model):
     class Meta:
         db_table = 'project'
 
-
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
@@ -72,7 +71,6 @@ class Attribute(models.Model):
     class Meta:
         db_table = 'attribute'
         unique_together = (('name', 'object'),)
-
 
 class AttributeSerializer(serializers.ModelSerializer):
     class Meta:
