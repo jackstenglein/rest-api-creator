@@ -16,7 +16,7 @@ class Project(models.Model):
     language = models.SmallIntegerField(choices=LANGUAGE_CHOICES, blank=False)
 
     def __str__(self):
-        return self.name
+        return str(ProjectSerializer(self).data)
 
     class Meta:
         db_table = 'project'
@@ -74,7 +74,7 @@ class Attribute(models.Model):
     type = models.SmallIntegerField(choices=DATA_TYPE_CHOICES, blank=False)
 
     def __str__(self):
-        return self.name
+        return str(AttributeSerializer(self).data)
 
     class Meta:
         db_table = 'attribute'

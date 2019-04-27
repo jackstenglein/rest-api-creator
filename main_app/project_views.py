@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files import File
 
@@ -8,6 +8,7 @@ from .json_encoder import JsonEncoder
 import json
 
 import os
+from zipfile import ZipFile
 from rest_api_creator.settings import BASE_DIR
 
 
@@ -15,7 +16,6 @@ from rest_api_creator.settings import BASE_DIR
 def create_project(request):
     """ Creates a new Project for the user in request.user. """
     body_data = json.loads(request.body)
-    print(request.user)
     project = Project(owner=request.user, name=body_data["name"], language=1)
     project.save()
     return JsonResponse({"message": "Project created"}, status=201)
@@ -49,11 +49,18 @@ def download_project(request, project_id):
     try:
         project = Project.objects.get(pk=project_id, owner=request.user)
         objects = Object.objects.filter(owner=request.user, project=project)
+
+        dirpath = get_project_dir(request.user.username, project_id)
+        filepaths = []
+        try:
+            os.makedirs(dirpath)
+        except FileExistsError:
+            pass
+
         for object in objects:
             # Create a Python file object using open() and the with statement
-            dirpath = get_project_dir(request.user.username, project_id)
-            os.makedirs(dirpath)
             filepath = os.path.join(dirpath, object.name + ".js")
+            filepaths.append(filepath)
             with open(filepath, 'w') as f:
                 myfile = File(f)
                 myfile.write("// api/models/" + object.name + ".js\n\n")
@@ -66,7 +73,15 @@ def download_project(request, project_id):
                     myfile.write("', required: " + str(attribute.required).lower() + " },")
 
                 myfile.write("\n    }\n}\n")
-        return JsonResponse({"message": "File created"})
+
+        zip_path = dirpath + "/" + project.name + ".zip"
+        with ZipFile(zip_path,'w') as zip:
+            # writing each file one by one
+            for file in filepaths:
+                file_name = file[file.rindex("/")+1 : ]
+                zip.write(file, arcname=project.name + "/api/models/" + file_name)
+
+        return FileResponse(open(zip_path, 'rb'), as_attachment=True)
     except Project.DoesNotExist:
         return JsonResponse({"error": "Project id=" + str(project_id) + " does not exist"}, status=400)
 
