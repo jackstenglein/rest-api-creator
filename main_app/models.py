@@ -46,12 +46,12 @@ class ObjectSerializer(serializers.ModelSerializer):
 
 
 class Attribute(models.Model):
-    STRING = 1
-    INTEGER = 2
-    FLOAT = 3
-    DATETIME = 4
-    BOOLEAN = 5
-    JSON = 6
+    STRING = 0
+    INTEGER = STRING + 1
+    FLOAT = INTEGER + 1
+    DATETIME = FLOAT + 1
+    BOOLEAN = DATETIME + 1
+    JSON = BOOLEAN + 1
     DATA_TYPE_CHOICES = (
         (STRING, 'Text'),
         (INTEGER, 'Integer'),
@@ -59,6 +59,14 @@ class Attribute(models.Model):
         (DATETIME, 'Date/Time'),
         (BOOLEAN, 'True/False'),
         (JSON, 'JSON'),
+    )
+    DATA_TYPE_TO_SAILS_TYPE = (
+        "string",
+        "number",
+        "number",
+        "number",
+        "boolean",
+        "json"
     )
     object = models.ForeignKey(Object, on_delete=models.CASCADE, blank=False)
     name = models.CharField(max_length=30, blank=False)

@@ -1,18 +1,12 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
-from django.forms import formset_factory
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm
+from django.http import JsonResponse
 from django.db.utils import IntegrityError
-
-from .models import Object, Project, ProjectSerializer
-from .forms import ObjectForm, AttributeForm
 from django.views.decorators.csrf import csrf_exempt
-import json
-from .json_encoder import JsonEncoder
-
 from django.forms.models import model_to_dict
 
+from .models import Object, Project, ProjectSerializer
+from .json_encoder import JsonEncoder
+
+import json
 
 
 def get_objects(request, project_id, object_id=None):
