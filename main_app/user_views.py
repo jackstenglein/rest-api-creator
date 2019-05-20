@@ -15,3 +15,22 @@ def signup(request):
         user.save()
         login(request, user)
         return JsonResponse({"message": "User created"})
+
+
+@csrf_exempt
+def app_login(request):
+    if request.method == "PUT":
+        body_data = json.loads(request.body)
+
+        if "username" not in body_data:
+            return JsonResponse({"error": "Missing required `username` parameter"}, status=400)
+        if "password" not in body_data:
+            return JsonResponse({"error": "Missing required `password` parameter"}, status=400)
+
+        user = authenticate(request, username=body_data["username"], password=body_data["password"])
+        if user is not None:
+            login(request, user)
+            return JsonResponse({"message": "Logged in"})
+
+        return JsonResponse({"error": "Incorrect username or password"}, status=400)
+

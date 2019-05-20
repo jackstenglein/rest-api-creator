@@ -16,8 +16,10 @@ def get_objects(request, project_id, object_id=None):
         try:
             object = Object.objects.get(pk=object_id, owner=request.user, project__id=project_id)
             attributes = object.attribute_set.all()
+            actions = object.action_set.all()
             object = model_to_dict(object)
             object["attributes"] = list(attributes)
+            object["actions"] = list(actions)
             return JsonResponse({"object": object}, JsonEncoder)
         except Object.DoesNotExist as e:
             return JsonResponse({"error": "Object id=" + str(object_id) + " does not exist"}, status=400)
