@@ -65,7 +65,9 @@ def create_object(request, project_id):
         return JsonResponse({"error": error}, status=400)
 
 @csrf_exempt
-def objects(request, project=None, object=None):
+def objects(request, project=None, object=None):    
+    if request.method == "OPTIONS":
+        return HttpResponse()
     if project == None:
         return JsonResponse({"error": "Invalid project"}, status=400)
     if not request.user.is_authenticated:

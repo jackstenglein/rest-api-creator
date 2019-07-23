@@ -30,7 +30,11 @@ def app_login(request):
         user = authenticate(request, username=body_data["username"], password=body_data["password"])
         if user is not None:
             login(request, user)
+            request.session.set_test_cookie()
             return JsonResponse({"message": "Logged in"})
 
         return JsonResponse({"error": "Incorrect username or password"}, status=400)
+
+    return JsonResponse({"error": "Invalid HTTP method"}, status=405)
+
 
