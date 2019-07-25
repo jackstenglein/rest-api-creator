@@ -56,6 +56,21 @@ export function objectEditorAddAttribute() {
     };
 }
 
+export function objectEditorUpdateAttribute(index, update) {
+    return {
+        type: OBJECT_EDITOR_UPDATE_ATTRIBUTE,
+        index: index,
+        update: update
+    };
+}
+
+export function objectEditorRemoveAttribute(index) {
+    return {
+        type: OBJECT_EDITOR_REMOVE_ATTRIBUTE,
+        index: index
+    };
+}
+
 /**
 * Action creators for creating objects
 */

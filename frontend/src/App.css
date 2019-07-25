@@ -23,6 +23,22 @@
   color: #61dafb;
 }
 
+.breadcrumb.crud {
+    padding: 0;
+    margin-bottom: 0;
+    background-color: white;
+    border-radius: 0;
+}
+
+.object-editor-toolbar {
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+}
+
+.object-editor-viewport {
+    margin-bottom: 1rem;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

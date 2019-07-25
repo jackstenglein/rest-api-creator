@@ -66,6 +66,31 @@ function objects(state = {}, action) {
             return Object.assign({}, state, {
                 editor: editor
             });
+        case Actions.OBJECT_EDITOR_UPDATE_ATTRIBUTE:
+            editor = Object.assign({}, state.editor, {
+                attributes: state.editor.attributes.map((attribute, index) => {
+                    if (index === action.index) {
+                        return Object.assign({}, attribute, action.update);
+                    } else {
+                        return attribute;
+                    }
+                })
+            });
+            return Object.assign({}, state, {
+                editor: editor
+            });
+        case Actions.OBJECT_EDITOR_REMOVE_ATTRIBUTE:
+            let firstList = state.editor.attributes.slice(0, action.index);
+            let secondList = state.editor.attributes.slice(action.index + 1);
+            editor = Object.assign({}, state.editor, {
+                attributes: [
+                    ...firstList,
+                    ...secondList
+                ]
+            });
+            return Object.assign({}, state, {
+                editor: editor
+            });
         default:
             return state;
     }
