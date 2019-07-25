@@ -8,6 +8,7 @@ const initialState = {
             mode: Actions.OBJECT_EDITOR_NOT_OPEN,
             selectedObject: -1,
             name: "",
+            nameFeedback: null,
             attributes: []
         },
         items: []
@@ -58,8 +59,11 @@ function objects(state = {}, action) {
                     ...state.editor.attributes,
                     {
                         name: "",
+                        nameFeedback: null,
                         type: "Choose...",
-                        default: ""
+                        typeFeedback: null,
+                        default: "",
+                        defaultFeedback: null
                     }
                 ]
             });
@@ -90,6 +94,23 @@ function objects(state = {}, action) {
             });
             return Object.assign({}, state, {
                 editor: editor
+            });
+        case Actions.OBJECT_EDITOR_INVALIDATE_ATTRIBUTE:
+            editor = Object.assign({}, state.editor, {
+                attributes: state.editor.attributes.map((attribute, index) => {
+                    if (index === action.index) {
+                        return Object.assign({}, attribute, action.feedback);
+                    } else {
+                        return attribute;
+                    }
+                })
+            });
+            return Object.assign({}, state, {
+                editor: editor
+            });
+        case Actions.OBJECT_EDITOR_INVALIDATE_DETAILS:
+            return Object.assign({}, state, {
+                editor: Object.assign({}, state.editor, action.feedback)
             });
         default:
             return state;

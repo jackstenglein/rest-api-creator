@@ -18,6 +18,8 @@ export const OBJECT_EDITOR_UPDATE_DESCRIPTION = "ObjectEditorUpdateDescription";
 export const OBJECT_EDITOR_ADD_ATTRIBUTE = "ObjectEditorAddAttribute";
 export const OBJECT_EDITOR_REMOVE_ATTRIBUTE = "ObjectEditorRemoveAttribute";
 export const OBJECT_EDITOR_UPDATE_ATTRIBUTE = "ObjectEditorUpdateAttribute";
+export const OBJECT_EDITOR_INVALIDATE_ATTRIBUTE = "ObjectEditorInvalidateAttribute";
+export const OBJECT_EDITOR_INVALIDATE_DETAILS = "ObjectEditorInvalidateDetails";
 
 // Actual API requests for creating an object
 export const CREATE_OBJECT_REQUEST = "CreateObjectRequest";
@@ -69,6 +71,21 @@ export function objectEditorRemoveAttribute(index) {
         type: OBJECT_EDITOR_REMOVE_ATTRIBUTE,
         index: index
     };
+}
+
+export function objectEditorInvalidateAttribute(index, feedback) {
+    return {
+        type: OBJECT_EDITOR_INVALIDATE_ATTRIBUTE,
+        index: index,
+        feedback: feedback
+    }
+}
+
+export function objectEditorInvalidateDetails(feedback) {
+    return {
+        type: OBJECT_EDITOR_INVALIDATE_DETAILS,
+        feedback: feedback
+    }
 }
 
 /**

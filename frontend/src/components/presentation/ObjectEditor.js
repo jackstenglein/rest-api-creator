@@ -27,7 +27,9 @@ function getAttributeRowJsx(index, attribute, onChange) {
                     value={attribute.name}
                     onChange={(event) => onChange(index, {"name": event.target.value})}
                     placeholder="Enter name"
+                    isInvalid={attribute.nameFeedback !== null}
                 />
+                <Form.Control.Feedback type="invalid">{attribute.nameFeedback}</Form.Control.Feedback>
             </Form.Group>
             <Form.Group as={Col}>
                 <Form.Label>Data type</Form.Label>
@@ -35,11 +37,13 @@ function getAttributeRowJsx(index, attribute, onChange) {
                     as="select"
                     value={attribute.type}
                     onChange={(event) => onChange(index, {"type": event.target.value})}
+                    isInvalid={attribute.typeFeedback !== null}
                 >
                     <option>Choose...</option>
                     <option>Text</option>
                     <option>Integer</option>
                 </Form.Control>
+                <Form.Control.Feedback type="invalid">{attribute.typeFeedback}</Form.Control.Feedback>
             </Form.Group>
             <Form.Group as={Col}>
                 <Form.Label>Default value</Form.Label>
@@ -47,7 +51,9 @@ function getAttributeRowJsx(index, attribute, onChange) {
                     value={attribute.default}
                     onChange={(event) => onChange(index, {"default": event.target.value})}
                     placeholder="Optional value"
+                    isInvalid={attribute.defaultFeedback !== null}
                 />
+                <Form.Control.Feedback type="invalid">{attribute.defaultFeedback}</Form.Control.Feedback>
             </Form.Group>
         </Form.Row>
     );
@@ -131,7 +137,7 @@ function getTopBar(props) {
             </Col>
             <Col xs="auto">
                 <ButtonToolbar>
-                    <Button variant="primary" className="mr-2">{buttonTitle}</Button>
+                    <Button variant="primary" className="mr-2" onClick={() => props.onSubmit(props)}>{buttonTitle}</Button>
                     <Button variant="danger">Cancel</Button>
                 </ButtonToolbar>
             </Col>
@@ -171,7 +177,13 @@ function ObjectEditor(props) {
             <h4>Details</h4>
             <Form.Group controlId="createObjectName">
                 <Form.Label>Object name</Form.Label>
-                <Form.Control onChange={props.nameOnChange} value={props.name} placeholder="Enter name" />
+                <Form.Control
+                    onChange={props.nameOnChange}
+                    value={props.name}
+                    placeholder="Enter name"
+                    isInvalid={props.nameFeedback !== null}
+                />
+                <Form.Control.Feedback type="invalid">{props.nameFeedback}</Form.Control.Feedback>
             </Form.Group>
             <Form.Group controlId="createObjectDescription">
                 <Form.Label>Description</Form.Label>
