@@ -3,10 +3,56 @@ from django.db.utils import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from django.forms.models import model_to_dict
 
-from .models import Object, Project, ProjectSerializer
+from .models import Attribute, Object, Project, ProjectSerializer
 from .json_encoder import JsonEncoder
+from .exceptions import InvalidAttributeException
 
 import json
+
+
+def convert_attribute_type(type):
+    if type == 'Text':
+        return Attribute.STRING
+    if type == 'Integer':
+        return Attribute.INTEGER
+
+    raise InvalidAttributeException
+
+
+def validate_object(object, project_id, owner):
+    validated = True
+
+    nameFeedback = None
+    if "name" not in object:
+        nameFeedback = "This field is required."
+        validated = False
+    else:
+        try:
+            name = object["name"]
+            dup_object = Object.objects.get(name=name, project__id=project_id, owner=owner)
+            nameFeedback = "This object name is already being used in this project."
+            validated = False
+        except Object.DoesNotExist as e:
+            pass
+        except Object.MultipleObjectsReturned as e:
+            nameFeedback = "This object name is already being used in this project."
+            validated = False
+
+    attributeFeedback = []
+    for attribute in object.get("attributes", []):
+        feedback = {}
+        if attribute.get("name", "") == "":
+            feedback["name"] = "This field is required."
+            validated = False
+        if attribute.get("type", "") not in ["Text", "Integer"]:
+            feedback["type"] = "Invalid attribute type."
+            validated = False
+        attributeFeedback.append(feedback)
+
+    if (validated):
+        return None
+
+    return JsonResponse({"nameFeedback": nameFeedback, "attributeFeedback": attributeFeedback}, status=400)
 
 
 def get_objects(request, project_id, object_id=None):
@@ -35,8 +81,9 @@ def create_object(request, project_id):
         return JsonResponse({"error": "Missing request body"}, status=400)
 
     body_data = json.loads(request.body)
-    if "name" not in body_data:
-        return JsonResponse({"error": "Missing `name` parameter"}, status=400)
+    feedback = validate_object(body_data, project_id, request.user)
+    if feedback != None:
+        return feedback
 
     try:
         project = Project.objects.get(pk=project_id, owner=request.user)
@@ -47,7 +94,7 @@ def create_object(request, project_id):
                 new_object.attribute_set.create(
                     name=attribute["name"],
                     required=attribute.get("required", False),
-                    type=attribute["type"]
+                    type=convert_attribute_type(attribute["type"])
                 )
         print(new_object)
         return JsonResponse({"message": "Object created"})
@@ -65,7 +112,7 @@ def create_object(request, project_id):
         return JsonResponse({"error": error}, status=400)
 
 @csrf_exempt
-def objects(request, project=None, object=None):    
+def objects(request, project=None, object=None):
     if request.method == "OPTIONS":
         return HttpResponse()
     if project == None:

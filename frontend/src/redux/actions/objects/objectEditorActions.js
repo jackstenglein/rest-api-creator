@@ -1,7 +1,7 @@
 /**
-* actions.js
+* objectEditorActions.js
 *
-* Defines action types and action creators.
+* Defines action types and action creators for the object editor.
 */
 
 import fetch from 'cross-fetch';
@@ -20,6 +20,13 @@ export const OBJECT_EDITOR_REMOVE_ATTRIBUTE = "ObjectEditorRemoveAttribute";
 export const OBJECT_EDITOR_UPDATE_ATTRIBUTE = "ObjectEditorUpdateAttribute";
 export const OBJECT_EDITOR_INVALIDATE_ATTRIBUTE = "ObjectEditorInvalidateAttribute";
 export const OBJECT_EDITOR_INVALIDATE_DETAILS = "ObjectEditorInvalidateDetails";
+export const OBJECT_EDITOR_CLOSE_ERROR_MODAL = "ObjectEditorCloseErrorModal";
+
+// Object editor statuses
+export const OBJECT_EDITOR_EDITING = "ObjectEditorEditing";
+export const OBJECT_EDITOR_REQUEST_PENDING = "ObjectEditorRequestPending";
+export const OBJECT_EDITOR_REQUEST_SUCCEEDED = "ObjectEditorRequestSucceeded";
+export const OBJECT_EDITOR_REQUEST_FAILED = "ObjectEditorRequestFailed";
 
 // Actual API requests for creating an object
 export const CREATE_OBJECT_REQUEST = "CreateObjectRequest";
@@ -41,14 +48,18 @@ export const NEW_OBJECT_MODE = "ObjectEditorNew";
 export function objectEditorUpdateName(name) {
     return {
         type: OBJECT_EDITOR_UPDATE_NAME,
-        name: name
+        details: {
+            name: name
+        }
     };
 }
 
 export function objectEditorUpdateDescription(description) {
     return {
         type: OBJECT_EDITOR_UPDATE_DESCRIPTION,
-        description: description
+        details: {
+            description: description
+        }
     };
 }
 
@@ -84,8 +95,14 @@ export function objectEditorInvalidateAttribute(index, feedback) {
 export function objectEditorInvalidateDetails(feedback) {
     return {
         type: OBJECT_EDITOR_INVALIDATE_DETAILS,
-        feedback: feedback
+        details: {
+            ...feedback
+        }
     }
+}
+
+export function objectEditorCloseErrorModal() {
+    return {type: OBJECT_EDITOR_CLOSE_ERROR_MODAL};
 }
 
 /**
@@ -116,7 +133,16 @@ function createObjectResponse(object, json) {
     }
 }
 
+function createObjectFailure(message, feedback) {
+    return {
+        type: CREATE_OBJECT_FAILURE,
+        message: message,
+        feedback
+    }
+}
+
 export function createObject(object) {
+    console.log("OBJECT: ", object);
     return function(dispatch) {
         dispatch(requestCreateObject(object));
         return fetch('http://localhost:8000/app/projects/5/objects', {
@@ -135,6 +161,11 @@ export function createObject(object) {
         }).then(function(json) {
             console.log("Json response: ", json);
             dispatch(createObjectResponse(object, json));
+        }).catch(function(error) {
+            console.log("Caught error: ", error);
+            let message = "Unable to create object \"" + object.name + "\" due to an" +
+                " unknown error. Please check your internet connection and try again.";
+            dispatch(createObjectFailure(message, null));
         });
     }
 }

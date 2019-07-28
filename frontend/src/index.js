@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 import { createStore, applyMiddleware } from 'redux';
-import { crudCreatorApp } from './actions/reducers.js';
+import { crudCreatorApp } from './redux/reducers/mainReducer.js';
 import thunkMiddleware from 'redux-thunk';
 import Root from './Root'
 

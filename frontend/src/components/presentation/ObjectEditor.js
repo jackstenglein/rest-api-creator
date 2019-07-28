@@ -9,6 +9,16 @@ import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
 import Breadcrumb from 'react-bootstrap/Breadcrumb';
 import IconButton from '@material-ui/core/IconButton';
 import Delete from '@material-ui/icons/Delete';
+import {
+    OBJECT_EDITOR_EDITING,
+    OBJECT_EDITOR_REQUEST_PENDING,
+    OBJECT_EDITOR_REQUEST_SUCCEEDED,
+    OBJECT_EDITOR_REQUEST_FAILED
+} from '../../redux/actions/objects/objectEditorActions.js';
+import { Redirect } from 'react-router-dom';
+import Modal from 'react-bootstrap/Modal';
+import Spinner from 'react-bootstrap/Spinner';
+
 
 const OBJECT_DESC_PLACEHOLDER = "Add a description of what this object represents"
     + " and it will be included in your auto-generated documentation.";
@@ -89,18 +99,17 @@ function getAttribute(index, attribute, onChange, onClickRemove) {
     );
 }
 
-function displayAttributes(props) {
-    const attributes = props.attributes;
+function displayAttributes(attributes, callbacks) {
     let attributeJsx = [];
     for (let i = 0; i < attributes.length; ++i) {
         attributeJsx.push(<hr key={"separator" + i}/>);
-        attributeJsx.push(getAttribute(i, attributes[i], props.attributeOnChange, props.removeAttribute));
+        attributeJsx.push(getAttribute(i, attributes[i], callbacks.attributeOnChange, callbacks.removeAttribute));
     }
     return attributeJsx;
 }
 
 function getBreadcrumbJsx(props) {
-    if (props.selectedObject === -1) {
+    if (props.control.selectedObject === -1) {
         return (
             <Breadcrumb bsPrefix="breadcrumb crud">
                 <Breadcrumb.Item href="#">Projects</Breadcrumb.Item>
@@ -115,34 +124,11 @@ function getBreadcrumbJsx(props) {
                 <Breadcrumb.Item href="#">Projects</Breadcrumb.Item>
                 <Breadcrumb.Item href="#">{props.projectName}</Breadcrumb.Item>
                 <Breadcrumb.Item href="#">Objects</Breadcrumb.Item>
-                <Breadcrumb.Item active>{props.name}</Breadcrumb.Item>
+                <Breadcrumb.Item active>{props.details.name}</Breadcrumb.Item>
                 <Breadcrumb.Item active>Edit</Breadcrumb.Item>
             </Breadcrumb>
         );
     }
-}
-
-function getTopBar(props) {
-    let buttonTitle;
-    if (props.selectedObject === -1) {
-        buttonTitle = "Create";
-    } else {
-        buttonTitle = "Save";
-    }
-
-    return (
-        <Row className="align-items-center justify-content-between object-editor-toolbar">
-            <Col xs="auto">
-                { getBreadcrumbJsx(props) }
-            </Col>
-            <Col xs="auto">
-                <ButtonToolbar>
-                    <Button variant="primary" className="mr-2" onClick={() => props.onSubmit(props)}>{buttonTitle}</Button>
-                    <Button variant="danger">Cancel</Button>
-                </ButtonToolbar>
-            </Col>
-        </Row>
-    );
 }
 
 function displayIdAttribute() {
@@ -170,20 +156,85 @@ function displayIdAttribute() {
     );
 }
 
+function getTopBar(props) {
+    let buttonTitle;
+    let buttonsDisabled = false;
+    if (props.control.selectedObject === -1) {
+        buttonTitle = "Create";
+    } else {
+        buttonTitle = "Save";
+    }
+
+    let submitButton;
+    let cancelButton;
+    if (props.control.status === OBJECT_EDITOR_REQUEST_PENDING) {
+        submitButton = (
+            <Button variant="primary" className="mr-2" disabled>
+                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"/>
+            </Button>
+        );
+        cancelButton = (<Button variant="danger" disabled>Cancel</Button>);
+    } else {
+        submitButton = (
+            <Button variant="primary" className="mr-2" onClick={() => props.callbacks.onSubmit(props)}>{buttonTitle}</Button>
+        );
+        cancelButton = (<Button variant="danger">Cancel</Button>);
+    }
+
+    return (
+        <Row className="align-items-center justify-content-between object-editor-toolbar">
+            <Col xs="auto">
+                { getBreadcrumbJsx(props) }
+            </Col>
+            <Col xs="auto">
+                <ButtonToolbar>
+                    { submitButton }
+                    { cancelButton }
+                </ButtonToolbar>
+            </Col>
+        </Row>
+    );
+}
+
+function getErrorModal(control, callbacks) {
+    if (control.status !== OBJECT_EDITOR_REQUEST_FAILED) {
+        return null;
+    }
+
+    return (
+        <Modal centered show onHide={callbacks.closeErrorModal}>
+            <Modal.Header closeButton>
+                <Modal.Title>Unable to create object</Modal.Title>
+            </Modal.Header>
+
+            <Modal.Body>
+                <p>{control.errorMessage}</p>
+            </Modal.Body>
+        </Modal>
+    );
+}
+
 function ObjectEditor(props) {
+    const { control, details, attributes, callbacks } = props;
+
+    if (control.status === OBJECT_EDITOR_REQUEST_SUCCEEDED) {
+        return (<Redirect to="/" />);
+    }
+
     return (
         <Container className="object-editor-viewport">
+            { getErrorModal(control, callbacks) }
             { getTopBar(props) }
             <h4>Details</h4>
             <Form.Group controlId="createObjectName">
                 <Form.Label>Object name</Form.Label>
                 <Form.Control
-                    onChange={props.nameOnChange}
-                    value={props.name}
+                    onChange={callbacks.nameOnChange}
+                    value={details.name}
                     placeholder="Enter name"
-                    isInvalid={props.nameFeedback !== null}
+                    isInvalid={details.nameFeedback !== null}
                 />
-                <Form.Control.Feedback type="invalid">{props.nameFeedback}</Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{details.nameFeedback}</Form.Control.Feedback>
             </Form.Group>
             <Form.Group controlId="createObjectDescription">
                 <Form.Label>Description</Form.Label>
@@ -191,14 +242,14 @@ function ObjectEditor(props) {
                     as="textarea"
                     rows="3"
                     placeholder={OBJECT_DESC_PLACEHOLDER}
-                    onChange={props.descriptionOnChange}
-                    value={props.description}
+                    onChange={callbacks.descriptionOnChange}
+                    value={details.description}
                 />
             </Form.Group>
             <h4>Attributes</h4>
             { displayIdAttribute() }
-            { displayAttributes(props) }
-            <Button variant="primary" onClick={props.clickAddAttribute}>Add attribute</Button>
+            { displayAttributes(attributes, callbacks) }
+            <Button variant="primary" onClick={callbacks.clickAddAttribute}>Add attribute</Button>
         </Container>
     );
 }
