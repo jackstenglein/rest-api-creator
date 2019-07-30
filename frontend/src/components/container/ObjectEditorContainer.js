@@ -9,6 +9,7 @@ import {
     objectEditorInvalidateAttribute,
     objectEditorInvalidateDetails,
     objectEditorCloseErrorModal,
+    objectEditorCancel,
     createObject
 } from '../../redux/actions/objects/objectEditorActions.js';
 
@@ -122,7 +123,8 @@ const mapDispatchToProps = dispatch => {
             attributeOnChange: (index, update) => updateAttribute(dispatch, index, update),
             removeAttribute: (index) => removeAttribute(dispatch, index),
             onSubmit: (editor) => submitObject(dispatch, editor),
-            closeErrorModal: () => dispatch(objectEditorCloseErrorModal())
+            closeErrorModal: () => dispatch(objectEditorCloseErrorModal()),
+            cancel: () => dispatch(objectEditorCancel())
         }
     };
 }

@@ -1,22 +1,16 @@
 import objectEditor from './objects/objectEditorReducer.js';
+import objectList from './objects/objectListReducer.js';
 
 const initialState = {
     selectedProject: 5,
     objects: {
-        editor: {
-            control: {
-                status: null,
-                selectedObject: -1,
-                errorMessage: ""
-            },
-            details: {
-                name: "",
-                description: "",
-                nameFeedback: null,
-            },
-            attributes: []
-        },
-        items: []
+        list: {
+            status: null,
+            errorMessage: null,
+            create: false,
+            selectedObject: -1,
+            items: []
+        }
     }
 }
 
@@ -26,7 +20,7 @@ export function crudCreatorApp(state = initialState, action) {
     return {
         objects: {
             editor: objectEditor(state.objects.editor, action),
-            items: []
+            list: objectList(state.objects.list, action)
         }
     }
 }

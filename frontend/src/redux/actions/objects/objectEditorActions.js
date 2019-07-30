@@ -21,6 +21,7 @@ export const OBJECT_EDITOR_UPDATE_ATTRIBUTE = "ObjectEditorUpdateAttribute";
 export const OBJECT_EDITOR_INVALIDATE_ATTRIBUTE = "ObjectEditorInvalidateAttribute";
 export const OBJECT_EDITOR_INVALIDATE_DETAILS = "ObjectEditorInvalidateDetails";
 export const OBJECT_EDITOR_CLOSE_ERROR_MODAL = "ObjectEditorCloseErrorModal";
+export const OBJECT_EDITOR_CANCEL = "ObjectEditorCancel";
 
 // Object editor statuses
 export const OBJECT_EDITOR_EDITING = "ObjectEditorEditing";
@@ -103,6 +104,10 @@ export function objectEditorInvalidateDetails(feedback) {
 
 export function objectEditorCloseErrorModal() {
     return {type: OBJECT_EDITOR_CLOSE_ERROR_MODAL};
+}
+
+export function objectEditorCancel() {
+    return {type: OBJECT_EDITOR_CANCEL};
 }
 
 /**

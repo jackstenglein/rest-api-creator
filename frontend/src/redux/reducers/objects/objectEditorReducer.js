@@ -1,14 +1,32 @@
 import { combineReducers } from 'redux';
 import * as Actions from '../../actions/objects/objectEditorActions.js';
+import { CLICK_CREATE } from '../../actions/objects/objectListActions.js';
+
+const initialState = {
+    control: {
+        status: null,
+        selectedObject: -1,
+        errorMessage: ""
+    },
+    details: {
+        name: "",
+        description: "",
+        nameFeedback: null,
+    },
+    attributes: []
+}
+
 
 // Reducer that handles the name and description section of the object editor
 // State is details section of editor object
-function objectEditorDetails(state = {}, action) {
+function objectEditorDetails(state = initialState.details, action) {
     switch (action.type) {
         case Actions.OBJECT_EDITOR_UPDATE_NAME:
         case Actions.OBJECT_EDITOR_UPDATE_DESCRIPTION:
         case Actions.OBJECT_EDITOR_INVALIDATE_DETAILS:
             return Object.assign({}, state, action.details);
+        case CLICK_CREATE:
+            return initialState.details;
         default:
             return state;
     }
@@ -16,7 +34,7 @@ function objectEditorDetails(state = {}, action) {
 
 // Reducer that handles attributes section of the object editor
 // State is list of attributes
-function objectEditorAttributes(state = [], action) {
+function objectEditorAttributes(state = initialState.attributes, action) {
     switch (action.type) {
         case Actions.OBJECT_EDITOR_ADD_ATTRIBUTE:
             return  [...state, {
@@ -43,6 +61,8 @@ function objectEditorAttributes(state = [], action) {
             });
         case Actions.OBJECT_EDITOR_REMOVE_ATTRIBUTE:
             return [...state.slice(0, action.index), ...state.slice(action.index + 1)];
+        case CLICK_CREATE:
+            return initialState.attributes;
         default:
             return state;
     }
@@ -50,7 +70,7 @@ function objectEditorAttributes(state = [], action) {
 
 // Reducer that handles control section of the object editor
 // State is control section of the editor object
-function objectEditorControl(state = {}, action) {
+function objectEditorControl(state = initialState.control, action) {
     switch (action.type) {
         case Actions.CREATE_OBJECT_REQUEST:
             return {...state, status: Actions.OBJECT_EDITOR_REQUEST_PENDING};
@@ -60,6 +80,10 @@ function objectEditorControl(state = {}, action) {
             return {...state, status: Actions.OBJECT_EDITOR_REQUEST_FAILED, errorMessage: action.message};
         case Actions.OBJECT_EDITOR_CLOSE_ERROR_MODAL:
             return {...state, status: Actions.OBJECT_EDITOR_EDITING, errorMessage: ""};
+        case Actions.OBJECT_EDITOR_CANCEL:
+            return {...state, status: Actions.OBJECT_EDITOR_CANCEL};
+        case CLICK_CREATE:
+            return initialState.control;
         default:
             return state;
     }

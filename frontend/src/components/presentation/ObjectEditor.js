@@ -13,7 +13,8 @@ import {
     OBJECT_EDITOR_EDITING,
     OBJECT_EDITOR_REQUEST_PENDING,
     OBJECT_EDITOR_REQUEST_SUCCEEDED,
-    OBJECT_EDITOR_REQUEST_FAILED
+    OBJECT_EDITOR_REQUEST_FAILED,
+    OBJECT_EDITOR_CANCEL
 } from '../../redux/actions/objects/objectEditorActions.js';
 import { Redirect } from 'react-router-dom';
 import Modal from 'react-bootstrap/Modal';
@@ -178,7 +179,7 @@ function getTopBar(props) {
         submitButton = (
             <Button variant="primary" className="mr-2" onClick={() => props.callbacks.onSubmit(props)}>{buttonTitle}</Button>
         );
-        cancelButton = (<Button variant="danger">Cancel</Button>);
+        cancelButton = (<Button variant="danger" onClick={() => props.callbacks.cancel()}>Cancel</Button>);
     }
 
     return (
@@ -217,8 +218,9 @@ function getErrorModal(control, callbacks) {
 function ObjectEditor(props) {
     const { control, details, attributes, callbacks } = props;
 
-    if (control.status === OBJECT_EDITOR_REQUEST_SUCCEEDED) {
-        return (<Redirect to="/" />);
+    if (control.status === OBJECT_EDITOR_REQUEST_SUCCEEDED ||
+        control.status === OBJECT_EDITOR_CANCEL) {
+        return (<Redirect to="/objects" />);
     }
 
     return (
