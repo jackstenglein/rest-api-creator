@@ -18,6 +18,7 @@ const ID_DESCRIPTION = "The id attribute uniquely identifies database records of
     + " object of this type is created, it is automatically given a new id.";
 
 const testObject = {
+    id: 31,
     details: {
         'name': 'Test Object Name',
         'description': 'This is a test object description. It is hopefully long enough to span across two lines.'
@@ -42,7 +43,7 @@ class ObjectView extends Component {
         // const { dispatch, selectedSubreddit } = this.props
         // dispatch(fetchPostsIfNeeded(selectedSubreddit))
         // this.props.callbacks.reset();
-        // this.props.callbacks.fetchDetailsIfNeeded();
+        this.props.callbacks.fetchObjectIfNeeded(this.props.selectedObject);
     }
     //
     // componentDidUpdate(prevProps) {
@@ -79,6 +80,7 @@ class ObjectView extends Component {
                 <Breadcrumb.Item href="#">Projects</Breadcrumb.Item>
                 <Breadcrumb.Item href="#">{this.props.projectName}</Breadcrumb.Item>
                 <Breadcrumb.Item href="#">Objects</Breadcrumb.Item>
+                <Breadcrumb.Item active>{testObject.details.name}</Breadcrumb.Item>
             </Breadcrumb>
         );
     }
@@ -94,7 +96,15 @@ class ObjectView extends Component {
                 </Button>
             );
         } else {
-            editButton = (<Button variant="secondary" className="mr-2">Edit</Button>);
+            editButton = (
+                <Button
+                    variant="secondary"
+                    className="mr-2"
+                    onClick={() => this.props.callbacks.clickEdit(testObject)}
+                >
+                    Edit
+                </Button>
+            );
             deleteButton = (<Button variant="danger">Delete</Button>);
         }
 
@@ -116,26 +126,35 @@ class ObjectView extends Component {
     render() {
         console.log("Object view props: ", this.props);
 
-        // const { selectedSubreddit, posts, isFetching, lastUpdated } = this.props
+        if (this.props.redirectToEdit) {
+            return (<Redirect to="/createObject" />);
+        }
+
+        const object = this.props.object;
+        if (object === null) {
+            return null;
+        }
+        
         return (
             <Container className="object-editor-viewport">
                 { this.getTopBar() }
-                <h5>{testObject.details.name}</h5>
-                <p>{testObject.details.description}</p>
+                <h5>{object.details.name}</h5>
+                <p>{object.details.description}</p>
+                <h6>Attributes</h6>
                 <Table bordered striped>
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Data Type</th>
+                            <th className="text-nowrap">Data Type</th>
                             <th>Description</th>
                         </tr>
                     </thead>
                     <tbody>
                         { this.getIdAttributeJsx() }
                         {
-                            testObject.attributes.map(function(attribute) {
+                            object.attributes.map(function(attribute) {
                                 return (
-                                    <tr>
+                                    <tr key={attribute.name}>
                                         <td>{attribute.name}</td>
                                         <td>{attribute.type}</td>
                                         <td>{attribute.description}</td>

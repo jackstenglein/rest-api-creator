@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux';
 import * as Actions from '../../actions/objects/objectEditorActions.js';
 import { CLICK_CREATE } from '../../actions/objects/objectListActions.js';
+import { CLICK_EDIT } from '../../actions/objects/objectViewActions.js';
 
 const initialState = {
     control: {
@@ -27,6 +28,8 @@ function objectEditorDetails(state = initialState.details, action) {
             return Object.assign({}, state, action.details);
         case CLICK_CREATE:
             return initialState.details;
+        case CLICK_EDIT:
+            return action.object.details;
         default:
             return state;
     }
@@ -63,6 +66,8 @@ function objectEditorAttributes(state = initialState.attributes, action) {
             return [...state.slice(0, action.index), ...state.slice(action.index + 1)];
         case CLICK_CREATE:
             return initialState.attributes;
+        case CLICK_EDIT:
+            return action.object.attributes;
         default:
             return state;
     }
@@ -84,6 +89,8 @@ function objectEditorControl(state = initialState.control, action) {
             return {...state, status: Actions.OBJECT_EDITOR_CANCEL};
         case CLICK_CREATE:
             return initialState.control;
+        case CLICK_EDIT:
+            return {...state, status: Actions.OBJECT_EDITOR_EDITING, selectedObject: action.object.id};
         default:
             return state;
     }

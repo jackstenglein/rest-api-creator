@@ -38,7 +38,7 @@ function getAttributeRowJsx(index, attribute, onChange) {
                     value={attribute.name}
                     onChange={(event) => onChange(index, {"name": event.target.value})}
                     placeholder="Enter name"
-                    isInvalid={attribute.nameFeedback !== null}
+                    isInvalid={attribute.nameFeedback !== null && attribute.nameFeedback !== undefined}
                 />
                 <Form.Control.Feedback type="invalid">{attribute.nameFeedback}</Form.Control.Feedback>
             </Form.Group>
@@ -48,7 +48,7 @@ function getAttributeRowJsx(index, attribute, onChange) {
                     as="select"
                     value={attribute.type}
                     onChange={(event) => onChange(index, {"type": event.target.value})}
-                    isInvalid={attribute.typeFeedback !== null}
+                    isInvalid={attribute.typeFeedback !== null && attribute.typeFeedback !== undefined}
                 >
                     <option>Choose...</option>
                     <option>Text</option>
@@ -62,7 +62,7 @@ function getAttributeRowJsx(index, attribute, onChange) {
                     value={attribute.default}
                     onChange={(event) => onChange(index, {"default": event.target.value})}
                     placeholder="Optional value"
-                    isInvalid={attribute.defaultFeedback !== null}
+                    isInvalid={attribute.defaultFeedback !== null && attribute.defaultFeedback !== undefined}
                 />
                 <Form.Control.Feedback type="invalid">{attribute.defaultFeedback}</Form.Control.Feedback>
             </Form.Group>
@@ -125,7 +125,7 @@ function getBreadcrumbJsx(props) {
                 <Breadcrumb.Item href="#">Projects</Breadcrumb.Item>
                 <Breadcrumb.Item href="#">{props.projectName}</Breadcrumb.Item>
                 <Breadcrumb.Item href="#">Objects</Breadcrumb.Item>
-                <Breadcrumb.Item active>{props.details.name}</Breadcrumb.Item>
+                <Breadcrumb.Item>{props.details.name}</Breadcrumb.Item>
                 <Breadcrumb.Item active>Edit</Breadcrumb.Item>
             </Breadcrumb>
         );
@@ -234,7 +234,7 @@ function ObjectEditor(props) {
                     onChange={callbacks.nameOnChange}
                     value={details.name}
                     placeholder="Enter name"
-                    isInvalid={details.nameFeedback !== null}
+                    isInvalid={details.nameFeedback !== null && details.nameFeedback !== undefined}
                 />
                 <Form.Control.Feedback type="invalid">{details.nameFeedback}</Form.Control.Feedback>
             </Form.Group>

@@ -1,29 +1,40 @@
 import { connect } from 'react-redux'
 import ObjectView from '../presentation/ObjectView';
-// import {
-//     clickCreate,
-//     clickObject,
-//     fetchObjects,
-//     fetchObjectsIfNeeded,
-//     resetListView
-// } from '../../redux/actions/objects/objectListActions.js';
+import {
+    clickEdit,
+    fetchObjectIfNeeded
+} from '../../redux/actions/objects/objectViewActions.js';
+import { OBJECT_EDITOR_EDITING } from '../../redux/actions/objects/objectEditorActions.js';
 
 
+function getObject(objects, id) {
+    for (let i = 0; i < objects.length; ++i) {
+        if (objects[i].id === id) {
+            return objects[i];
+        }
+    }
+    return null;
+}
 
 function mapStateToProps(state, ownProps) {
     console.log("Own props: ", ownProps);
-    return Object.assign({}, state.objects.list.items[31], {projectName: 'Test Project'});
+    console.log("state:", state);
+    // return Object.assign({}, state.objects.list.items[31], {projectName: 'Test Project'});
+    const id = parseInt(ownProps.match.params.id);
+    return {
+        selectedObject: id,
+        object: getObject(state.objects.list.items, id),
+        projectName: 'Test Project',
+        redirectToEdit: state.objects.editor.control.status === OBJECT_EDITOR_EDITING
+    };
 }
 
 const mapDispatchToProps = dispatch => {
     return {
-        // callbacks: {
-        //     reset: () => dispatch(resetListView()),
-        //     fetchObjectsIfNeeded: () => dispatch(fetchObjectsIfNeeded()),
-        //     refresh: () => dispatch(fetchObjects()),
-        //     onClickCreate: () => dispatch(clickCreate()),
-        //     clickObject: (id) => dispatch(clickObject(id))
-        // }
+        callbacks: {
+            clickEdit: (object) => dispatch(clickEdit(object)),
+            fetchObjectIfNeeded: (id) => dispatch(fetchObjectIfNeeded(id))
+        }
     };
 }
 
