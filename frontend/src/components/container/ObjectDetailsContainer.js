@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import ObjectView from '../presentation/ObjectView';
+import ObjectDetails from '../presentation/ObjectDetails';
 import {
     clickEdit,
     fetchObjectIfNeeded
@@ -38,9 +38,9 @@ const mapDispatchToProps = dispatch => {
     };
 }
 
-const ObjectViewContainer = connect(
+const ObjectDetailsContainer = connect(
     mapStateToProps,
     mapDispatchToProps
-)(ObjectView);
+)(ObjectDetails);
 
-export default ObjectViewContainer;
+export default ObjectDetailsContainer;

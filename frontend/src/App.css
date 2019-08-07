@@ -39,6 +39,29 @@
     margin-bottom: 1rem;
 }
 
+.project-menu {
+    border-right: 1px solid #ececec;
+    height: 100vh;
+    margin: 0px;
+    padding: 0px !important;
+}
+
+.project-menu-item {
+    margin: 0px !important;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ececec;
+    text-align: center;
+}
+
+.project-menu-link-selected {
+    color: white;
+}
+
+.project-menu-link-selected .project-menu-item {
+    background-color: #888383;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

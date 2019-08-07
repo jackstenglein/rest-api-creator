@@ -90,7 +90,7 @@ class ObjectListView extends Component {
     render() {
         console.log("Object list view props: ", this.props);
         if (this.props.create) {
-            return (<Redirect to="/createObject" />);
+            return (<Redirect to="/objects/create" />);
         }
 
         if (this.props.selectedObject !== -1) {
