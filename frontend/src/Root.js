@@ -7,6 +7,7 @@ import ObjectEditorContainer from './components/container/ObjectEditorContainer'
 import ObjectListViewContainer from './components/container/ObjectListViewContainer';
 import ObjectDetailsContainer from './components/container/ObjectDetailsContainer';
 import ObjectView from './components/presentation/ObjectView';
+import Documentation from './components/presentation/documentation/Documentation';
 
 
 const Root = ({ store }) => (
@@ -21,6 +22,7 @@ crossorigin="anonymous"
         <Switch>
             <Route exact path="/" component={App} />
             <Route path="/objects" component={ObjectView} />
+            <Route path="/documentation" component={Documentation} />
             {/* <Route exact path="/objects" component={ObjectListViewContainer} />
             <Route path="/objects/:id" component={ObjectDetailsContainer} />
             <Route path="/createObject" component={ObjectEditorContainer} /> */}

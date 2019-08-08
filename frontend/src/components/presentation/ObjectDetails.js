@@ -8,7 +8,7 @@ import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Spinner from 'react-bootstrap/Spinner';
-import Table from 'react-bootstrap/Table';
+import ObjectDocumentation from './documentation/ObjectDocumentation';
 // import {
 //     CLICK_CREATE,
 //     FETCH_OBJECTS_REQUEST
@@ -138,32 +138,7 @@ class ObjectDetails extends Component {
         return (
             <Container className="object-editor-viewport">
                 { this.getTopBar() }
-                <h5>{object.details.name}</h5>
-                <p>{object.details.description}</p>
-                <h6>Attributes</h6>
-                <Table bordered striped>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th className="text-nowrap">Data Type</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        { this.getIdAttributeJsx() }
-                        {
-                            object.attributes.map(function(attribute) {
-                                return (
-                                    <tr key={attribute.name}>
-                                        <td>{attribute.name}</td>
-                                        <td>{attribute.type}</td>
-                                        <td>{attribute.description}</td>
-                                    </tr>
-                                )
-                            })
-                        }
-                    </tbody>
-                </Table>
+                <ObjectDocumentation object={object} />
             </Container>
         );
     }
