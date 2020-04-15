@@ -10,9 +10,15 @@ import (
 	"github.com/rest_api_creator/backend-sls/errors"
 )
 
+type DynamoStore struct {
+	service *dynamodb.DynamoDB
+}
 
-func CreateUser(email string, password string) errors.ApiError {
-	svc := dynamodb.New(session.New())
+func NewDynamoStore() *DynamoStore {
+	return &DynamoStore{dynamodb.New(session.New())}
+}
+
+func (store *DynamoStore) CreateUser(email string, password string) errors.ApiError {
 	input := &dynamodb.PutItemInput{
 		ConditionExpression: aws.String("attribute_not_exists(email)"),
 		Item: map[string]*dynamodb.AttributeValue{
@@ -26,7 +32,7 @@ func CreateUser(email string, password string) errors.ApiError {
 		TableName: aws.String(os.Getenv("TABLE_NAME")),
 	}
 
-	_, err := svc.PutItem(input)
+	_, err := store.service.PutItem(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
