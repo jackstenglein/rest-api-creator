@@ -6,9 +6,6 @@ BIN_FILES := $(patsubst $(HANDLER_DIR)/%.go, $(BIN_DIR)/%, $(HANDLER_FILES))
 .PHONY: build clean deploy gomodgen
 
 build: gomodgen $(BIN_FILES)
-	export GO111MODULE=on
-	env GOOS=linux go build -ldflags="-s -w" -o bin/hello hello/main.go
-	env GOOS=linux go build -ldflags="-s -w" -o bin/world world/main.go
 
 $(BIN_DIR)/%: $(HANDLER_DIR)/%.go
 	export GO111MODULE=on
