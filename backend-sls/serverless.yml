@@ -24,6 +24,19 @@ frameworkVersion: '>=1.28.0 <2.0.0'
 provider:
   name: aws
   runtime: go1.x
+  environment:
+    TABLE_NAME: 'api-creator-${opt:stage, self:provider.stage}'
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 'arn:aws:dynamodb:*'
 
 # you can overwrite defaults here
 #  stage: dev
@@ -68,6 +81,12 @@ functions:
       - http:
           path: world
           method: get
+  signup:
+    handler: bin/signup
+    events:
+      - http:
+          path: signup
+          method: post
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
