@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"golang.org/x/crypto/bcrypt"
 	"github.com/rest_api_creator/backend-sls/dao"
 	"github.com/rest_api_creator/backend-sls/errors"
 	"strings"
@@ -52,7 +53,12 @@ func (action *SignupAction) Signup(request SignupRequest) (SignupResponse, int) 
 		return SignupResponse{err.Error()}, err.StatusCode()
 	}
 
-	err = action.store.CreateUser(request.Email, request.Password)
+	bytes, berr := bcrypt.GenerateFromPassword([]byte(request.Password), 14)
+	if berr != nil {
+		return SignupResponse{"Failed to hash password"}, 500
+	}
+
+	err = action.store.CreateUser(request.Email, string(bytes))
 	if err != nil {
 		return SignupResponse{err.Error()}, err.StatusCode()
 	}

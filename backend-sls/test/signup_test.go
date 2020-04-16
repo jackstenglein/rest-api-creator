@@ -54,7 +54,7 @@ func testEmailMissingDot(t *testing.T, action *actions.SignupAction) {
 
 func testEmailInUse(t *testing.T, action *actions.SignupAction, mockDataStore *mock.MockDataStore) {
 	request := actions.SignupRequest{Email: "test@example.com", Password: "12345678"}
-	mockDataStore.EXPECT().CreateUser("test@example.com", "12345678").Return(errors.NewUserError("Email already in use")).Times(1)
+	mockDataStore.EXPECT().CreateUser("test@example.com", gomock.Not("12345678")).Return(errors.NewUserError("Email already in use")).Times(1)
 	response, status := action.Signup(request)
 	if status != 400 {
 		t.Errorf("Status = %d; want 400", status)
@@ -66,7 +66,7 @@ func testEmailInUse(t *testing.T, action *actions.SignupAction, mockDataStore *m
 
 func testSuccess(t *testing.T, action *actions.SignupAction, mockDataStore *mock.MockDataStore) {
 	request := actions.SignupRequest{Email: "test@example.com", Password: "12345678"}
-	mockDataStore.EXPECT().CreateUser("test@example.com", "12345678").Return(nil).Times(1)
+	mockDataStore.EXPECT().CreateUser("test@example.com", gomock.Not("12345678")).Return(nil).Times(1)
 	response, status := action.Signup(request)
 	if status != 200 {
 		t.Errorf("Status = %d; want 200", status)
