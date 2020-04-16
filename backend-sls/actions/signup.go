@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/rest_api_creator/backend-sls/authentication"
 	"github.com/rest_api_creator/backend-sls/dao"
@@ -44,31 +45,36 @@ func NewSignupAction(store dao.DataStore, auth authentication.Authenticator) *Si
 	return &SignupAction{store, auth}
 }
 
-func (action *SignupAction) Signup(request SignupRequest) (SignupResponse, int) {
+func (action *SignupAction) Signup(request SignupRequest) (SignupResponse, string, int) {
 	ok := validateEmail(request.Email)
 	if !ok {
-		return SignupResponse{"Invalid email"}, 400
+		return SignupResponse{"Invalid email"}, "", 400
 	}
 
 	aerr := validatePassword(request.Password)
 	if aerr != nil {
-		return SignupResponse{aerr.Error()}, aerr.StatusCode()
+		return SignupResponse{aerr.Error()}, "", aerr.StatusCode()
 	}
 
 	bytes, err := bcrypt.GenerateFromPassword([]byte(request.Password), 14)
 	if err != nil {
-		return SignupResponse{"Failed to hash password"}, 500
+		return SignupResponse{"Failed to hash password"}, "", 500
 	}
 
 	token, err := action.auth.GenerateToken()
 	if err != nil {
-		return SignupResponse{"Failed to create auth token"}, 500
+		return SignupResponse{"Failed to create auth token"}, "", 500
 	}
 
 	aerr = action.store.CreateUser(request.Email, string(bytes), token)
 	if aerr != nil {
-		return SignupResponse{aerr.Error()}, aerr.StatusCode()
+		return SignupResponse{aerr.Error()}, "", aerr.StatusCode()
 	}
 
-	return SignupResponse{""}, 200
+	cookie, err := action.auth.GenerateCookie(request.Email, token)
+	if err != nil {
+		fmt.Println("Unable to generate cookie:", err)
+	}
+
+	return SignupResponse{""}, cookie, 200
 }
