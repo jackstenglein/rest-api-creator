@@ -52,9 +52,10 @@ func testEmailMissingDot(t *testing.T, action *actions.SignupAction) {
 	}
 }
 
-func testEmailInUse(t *testing.T, action *actions.SignupAction, mockDataStore *mock.MockDataStore) {
+func testEmailInUse(t *testing.T, action *actions.SignupAction, mockDataStore *mock.MockDataStore, mockAuth *mock.MockAuthenticator) {
 	request := actions.SignupRequest{Email: "test@example.com", Password: "12345678"}
-	mockDataStore.EXPECT().CreateUser("test@example.com", gomock.Not("12345678")).Return(errors.NewUserError("Email already in use")).Times(1)
+	mockAuth.EXPECT().GenerateToken().Return("token", nil).Times(1)
+	mockDataStore.EXPECT().CreateUser("test@example.com", gomock.Not("12345678"), "token").Return(errors.NewUserError("Email already in use")).Times(1)
 	response, status := action.Signup(request)
 	if status != 400 {
 		t.Errorf("Status = %d; want 400", status)
@@ -64,9 +65,10 @@ func testEmailInUse(t *testing.T, action *actions.SignupAction, mockDataStore *m
 	}
 }
 
-func testSuccess(t *testing.T, action *actions.SignupAction, mockDataStore *mock.MockDataStore) {
+func testSuccess(t *testing.T, action *actions.SignupAction, mockDataStore *mock.MockDataStore, mockAuth *mock.MockAuthenticator) {
 	request := actions.SignupRequest{Email: "test@example.com", Password: "12345678"}
-	mockDataStore.EXPECT().CreateUser("test@example.com", gomock.Not("12345678")).Return(nil).Times(1)
+	mockAuth.EXPECT().GenerateToken().Return("token", nil).Times(1)
+	mockDataStore.EXPECT().CreateUser("test@example.com", gomock.Not("12345678"), "token").Return(nil).Times(1)
 	response, status := action.Signup(request)
 	if status != 200 {
 		t.Errorf("Status = %d; want 200", status)
@@ -80,12 +82,13 @@ func TestSignup(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockDataStore := mock.NewMockDataStore(mockCtrl)
+	mockAuth := mock.NewMockAuthenticator(mockCtrl)
 
-	action := actions.NewSignupAction(mockDataStore)
+	action := actions.NewSignupAction(mockDataStore, mockAuth)
 	t.Run("EmptyEmail", func(t *testing.T) {testEmptyEmail(t, action)})
 	t.Run("EmptyPassword", func(t *testing.T) {testEmptyPassword(t, action)})
 	t.Run("EmailMissingAt", func(t *testing.T) {testEmailMissingAt(t, action)})
 	t.Run("EmailMissingDot", func(t *testing.T) {testEmailMissingDot(t, action)})
-	t.Run("EmailInUse", func(t *testing.T) {testEmailInUse(t, action, mockDataStore)})
-	t.Run("Success", func(t *testing.T) {testSuccess(t, action, mockDataStore)})
+	t.Run("EmailInUse", func(t *testing.T) {testEmailInUse(t, action, mockDataStore, mockAuth)})
+	t.Run("Success", func(t *testing.T) {testSuccess(t, action, mockDataStore, mockAuth)})
 }

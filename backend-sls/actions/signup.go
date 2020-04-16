@@ -2,6 +2,7 @@ package actions
 
 import (
 	"golang.org/x/crypto/bcrypt"
+	"github.com/rest_api_creator/backend-sls/authentication"
 	"github.com/rest_api_creator/backend-sls/dao"
 	"github.com/rest_api_creator/backend-sls/errors"
 	"strings"
@@ -18,6 +19,7 @@ type SignupResponse struct {
 
 type SignupAction struct {
 	store dao.DataStore
+	auth authentication.Authenticator
 }
 
 func validateEmail(email string) bool {
@@ -35,11 +37,11 @@ func validatePassword(password string) errors.ApiError {
 }
 
 func DefaultSignupAction() *SignupAction {
-	return &SignupAction{dao.NewDynamoStore()}
+	return &SignupAction{dao.NewDynamoStore(), authentication.NewSessionAuthenticator()}
 }
 
-func NewSignupAction(store dao.DataStore) *SignupAction {
-	return &SignupAction{store}
+func NewSignupAction(store dao.DataStore, auth authentication.Authenticator) *SignupAction {
+	return &SignupAction{store, auth}
 }
 
 func (action *SignupAction) Signup(request SignupRequest) (SignupResponse, int) {
@@ -48,19 +50,24 @@ func (action *SignupAction) Signup(request SignupRequest) (SignupResponse, int) 
 		return SignupResponse{"Invalid email"}, 400
 	}
 
-	err := validatePassword(request.Password)
-	if err != nil {
-		return SignupResponse{err.Error()}, err.StatusCode()
+	aerr := validatePassword(request.Password)
+	if aerr != nil {
+		return SignupResponse{aerr.Error()}, aerr.StatusCode()
 	}
 
-	bytes, berr := bcrypt.GenerateFromPassword([]byte(request.Password), 14)
-	if berr != nil {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(request.Password), 14)
+	if err != nil {
 		return SignupResponse{"Failed to hash password"}, 500
 	}
 
-	err = action.store.CreateUser(request.Email, string(bytes))
+	token, err := action.auth.GenerateToken()
 	if err != nil {
-		return SignupResponse{err.Error()}, err.StatusCode()
+		return SignupResponse{"Failed to create auth token"}, 500
+	}
+
+	aerr = action.store.CreateUser(request.Email, string(bytes), token)
+	if aerr != nil {
+		return SignupResponse{aerr.Error()}, aerr.StatusCode()
 	}
 
 	return SignupResponse{""}, 200

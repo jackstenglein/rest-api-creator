@@ -34,15 +34,15 @@ func (m *MockDataStore) EXPECT() *MockDataStoreMockRecorder {
 }
 
 // CreateUser mocks base method
-func (m *MockDataStore) CreateUser(arg0, arg1 string) errors.ApiError {
+func (m *MockDataStore) CreateUser(arg0, arg1, arg2 string) errors.ApiError {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUser", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateUser", arg0, arg1, arg2)
 	ret0, _ := ret[0].(errors.ApiError)
 	return ret0
 }
 
 // CreateUser indicates an expected call of CreateUser
-func (mr *MockDataStoreMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockDataStoreMockRecorder) CreateUser(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockDataStore)(nil).CreateUser), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockDataStore)(nil).CreateUser), arg0, arg1, arg2)
 }

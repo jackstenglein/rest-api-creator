@@ -18,7 +18,7 @@ func NewDynamoStore() *DynamoStore {
 	return &DynamoStore{dynamodb.New(session.New())}
 }
 
-func (store *DynamoStore) CreateUser(email string, password string) errors.ApiError {
+func (store *DynamoStore) CreateUser(email string, password string, token string) errors.ApiError {
 	input := &dynamodb.PutItemInput{
 		ConditionExpression: aws.String("attribute_not_exists(email)"),
 		Item: map[string]*dynamodb.AttributeValue{
@@ -27,6 +27,9 @@ func (store *DynamoStore) CreateUser(email string, password string) errors.ApiEr
 			},
 			"password": {
 				S: aws.String(password),
+			},
+			"token": {
+				S: aws.String(token),
 			},
 		},
 		TableName: aws.String(os.Getenv("TABLE_NAME")),
