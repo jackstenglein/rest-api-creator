@@ -6,6 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	dao "github.com/rest_api_creator/backend-sls/dao"
 	reflect "reflect"
 )
 
@@ -63,16 +64,16 @@ func (mr *MockAuthenticatorMockRecorder) GenerateCookie(arg0, arg1 interface{}) 
 }
 
 // VerifyCookie mocks base method
-func (m *MockAuthenticator) VerifyCookie(arg0, arg1, arg2 string) (bool, error) {
+func (m *MockAuthenticator) VerifyCookie(arg0, arg1, arg2 string, arg3 dao.DataStore) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyCookie", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "VerifyCookie", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VerifyCookie indicates an expected call of VerifyCookie
-func (mr *MockAuthenticatorMockRecorder) VerifyCookie(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAuthenticatorMockRecorder) VerifyCookie(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyCookie", reflect.TypeOf((*MockAuthenticator)(nil).VerifyCookie), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyCookie", reflect.TypeOf((*MockAuthenticator)(nil).VerifyCookie), arg0, arg1, arg2, arg3)
 }

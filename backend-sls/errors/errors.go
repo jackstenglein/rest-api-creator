@@ -1,5 +1,7 @@
 package errors
 
+import "errors"
+
 type ApiError interface {
 	Error() string
 	StatusCode() int
@@ -11,6 +13,10 @@ type UserError struct {
 
 type ServerError struct {
 	message string
+}
+
+func New(message string) error {
+	return errors.New(message)
 }
 
 func NewUserError(message string) ApiError {

@@ -63,6 +63,21 @@ func (mr *MockDataStoreMockRecorder) GetUser(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockDataStore)(nil).GetUser), arg0)
 }
 
+// GetProject mocks base method
+func (m *MockDataStore) GetProject(arg0, arg1 string) (dao.Project, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetProject", arg0, arg1)
+	ret0, _ := ret[0].(dao.Project)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetProject indicates an expected call of GetProject
+func (mr *MockDataStoreMockRecorder) GetProject(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProject", reflect.TypeOf((*MockDataStore)(nil).GetProject), arg0, arg1)
+}
+
 // UpdateUserToken mocks base method
 func (m *MockDataStore) UpdateUserToken(arg0, arg1 string) error {
 	m.ctrl.T.Helper()

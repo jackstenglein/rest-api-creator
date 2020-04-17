@@ -23,5 +23,6 @@ type Object struct {
 type DataStore interface {
 	CreateUser(string, string, string) errors.ApiError
 	GetUser(string) (User, errors.ApiError)
+	GetProject(string, string) (Project, error)
 	UpdateUserToken(string, string) error
 }
