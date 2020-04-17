@@ -135,7 +135,7 @@ var loginTests = []struct{
 func TestLogin(t *testing.T) {
 	for _, test := range loginTests {
 		t.Run(test.name, func(t *testing.T) {
-			// Create mock objects
+			// Create test objects
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			mockDataStore := mock.NewMockDataStore(mockCtrl)

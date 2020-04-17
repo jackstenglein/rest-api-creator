@@ -8,106 +8,106 @@ import (
 	"github.com/rest_api_creator/backend-sls/mock"
 )
 
-func testEmptyEmail(t *testing.T, action *actions.SignupAction) {
-	request := actions.SignupRequest{Email: "", Password: "12345678"}
-	response, cookie, status := action.Signup(request)
-	if status != 400 {
-		t.Errorf("Status = %d; want 400", status)
-	}
-	if response.Error != "Invalid email" {
-		t.Errorf("Error = %s; want 'Invalid email'", response.Error)
-	}
-	if cookie != "" {
-		t.Errorf("Cookie = %s; want ''", cookie)
-	}
-}
+var signupTests = []struct{
+	// Test name and input
+	name string
+	email string
+	password string
 
-func testEmptyPassword(t *testing.T, action *actions.SignupAction) {
-	request := actions.SignupRequest{Email: "test@example.com", Password: ""}
-	response, cookie, status := action.Signup(request)
-	if status != 400 {
-		t.Errorf("Status = %d; want 400", status)
-	}
-	if response.Error != "Password is too short" {
-		t.Errorf("Error = %s; want 'Password is too short'", response.Error)
-	}
-	if cookie != "" {
-		t.Errorf("Cookie = %s; want ''", cookie)
-	}
-}
+	// Mock data
+	token string
+	generateTokenCalls int
+	createUserErr errors.ApiError
+	createUserCalls int
+	cookie string
+	generateCookieCalls int
 
-func testEmailMissingAt(t *testing.T, action *actions.SignupAction) {
-	request := actions.SignupRequest{Email: "testexample.com", Password: "12345678"}
-	response, cookie, status := action.Signup(request)
-	if status != 400 {
-		t.Errorf("Status = %d; want 400", status)
-	}
-	if response.Error != "Invalid email" {
-		t.Errorf("Error = %s; want 'Invalid email'", response.Error)
-	}
-	if cookie != "" {
-		t.Errorf("Cookie = %s; want ''", cookie)
-	}
-}
-
-func testEmailMissingDot(t *testing.T, action *actions.SignupAction) {
-	request := actions.SignupRequest{Email: "test@examplecom", Password: "12345678"}
-	response, cookie, status := action.Signup(request)
-	if status != 400 {
-		t.Errorf("Status = %d; want 400", status)
-	}
-	if response.Error != "Invalid email" {
-		t.Errorf("Error = %s; want 'Invalid email'", response.Error)
-	}
-	if cookie != "" {
-		t.Errorf("Cookie = %s; want ''", cookie)
-	}
-}
-
-func testEmailInUse(t *testing.T, action *actions.SignupAction, mockDataStore *mock.MockDataStore, mockAuth *mock.MockAuthenticator) {
-	request := actions.SignupRequest{Email: "test@example.com", Password: "12345678"}
-	mockAuth.EXPECT().GenerateToken().Return("token", nil).Times(1)
-	mockDataStore.EXPECT().CreateUser("test@example.com", gomock.Not("12345678"), "token").Return(errors.NewUserError("Email already in use")).Times(1)
-	response, cookie, status := action.Signup(request)
-	if status != 400 {
-		t.Errorf("Status = %d; want 400", status)
-	}
-	if response.Error != "Email already in use" {
-		t.Errorf("Error = %s; want 'Email already in use'", response.Error)
-	}
-	if cookie != "" {
-		t.Errorf("Cookie = %s; want ''", cookie)
-	}
-}
-
-func testSuccess(t *testing.T, action *actions.SignupAction, mockDataStore *mock.MockDataStore, mockAuth *mock.MockAuthenticator) {
-	request := actions.SignupRequest{Email: "test@example.com", Password: "12345678"}
-	mockAuth.EXPECT().GenerateToken().Return("token", nil).Times(1)
-	mockAuth.EXPECT().GenerateCookie("test@example.com", "token").Return("cookie", nil).Times(1)
-	mockDataStore.EXPECT().CreateUser("test@example.com", gomock.Not("12345678"), "token").Return(nil).Times(1)
-	response, cookie, status := action.Signup(request)
-	if status != 200 {
-		t.Errorf("Status = %d; want 200", status)
-	}
-	if response.Error != "" {
-		t.Errorf("Error = %s; want ''", response.Error)
-	}
-	if cookie != "cookie" {
-		t.Errorf("Cookie = %s; want 'cookie'", cookie)
-	}
+	// Output
+	wantStatus int
+	wantError string
+	wantCookie string
+}{
+	{
+		name: "EmptyEmail",
+		password: "12345678",
+		wantStatus: 400,
+		wantError: "Invalid email",
+	},
+	{
+		name: "EmptyPassword",
+		email: "test@example.com",
+		wantStatus: 400,
+		wantError: "Password is too short",
+	},
+	{
+		name: "EmailMissingAt",
+		email: "testexample.com",
+		password: "12345678",
+		wantStatus: 400,
+		wantError: "Invalid email",
+	},
+	{
+		name: "EmailMissingDot",
+		email: "test@examplecom",
+		password: "12345678",
+		wantStatus: 400,
+		wantError: "Invalid email",
+	},
+	{
+		name: "EmailInUse",
+		email: "test@example.com",
+		password: "12345678",
+		token: "testToken",
+		generateTokenCalls: 1,
+		createUserErr: errors.NewUserError("Email already in use"),
+		createUserCalls: 1,
+		wantStatus: 400,
+		wantError: "Email already in use",
+	},
+	{
+		name: "Success",
+		email: "test@example.com",
+		password: "12345678",
+		token: "testToken",
+		generateTokenCalls: 1,
+		cookie: "testCookie",
+		generateCookieCalls: 1,
+		createUserCalls: 1,
+		wantStatus: 200,
+		wantError: "",
+		wantCookie: "testCookie",
+	},
 }
 
 func TestSignup(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockDataStore := mock.NewMockDataStore(mockCtrl)
-	mockAuth := mock.NewMockAuthenticator(mockCtrl)
+	for _, test := range signupTests {
+		t.Run(test.name, func(t *testing.T) {
+			// Create test objects
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			mockDataStore := mock.NewMockDataStore(mockCtrl)
+			mockAuth := mock.NewMockAuthenticator(mockCtrl)
+			action := actions.NewSignupAction(mockDataStore, mockAuth)
 
-	action := actions.NewSignupAction(mockDataStore, mockAuth)
-	t.Run("EmptyEmail", func(t *testing.T) {testEmptyEmail(t, action)})
-	t.Run("EmptyPassword", func(t *testing.T) {testEmptyPassword(t, action)})
-	t.Run("EmailMissingAt", func(t *testing.T) {testEmailMissingAt(t, action)})
-	t.Run("EmailMissingDot", func(t *testing.T) {testEmailMissingDot(t, action)})
-	t.Run("EmailInUse", func(t *testing.T) {testEmailInUse(t, action, mockDataStore, mockAuth)})
-	t.Run("Success", func(t *testing.T) {testSuccess(t, action, mockDataStore, mockAuth)})
+			// Setup test using input
+			request := actions.SignupRequest{Email: test.email, Password: test.password}
+			mockAuth.EXPECT().GenerateToken().Return(test.token, nil).Times(test.generateTokenCalls)
+			mockDataStore.EXPECT().CreateUser(test.email, gomock.Not(test.password), test.token).Return(test.createUserErr).Times(test.createUserCalls)
+			mockAuth.EXPECT().GenerateCookie(test.email, test.token).Return(test.cookie, nil).Times(test.generateCookieCalls)
+
+			// Perform the test
+			response, cookie, status := action.Signup(request)
+
+			// Verify the results
+			if status != test.wantStatus {
+				t.Errorf("Status = %d; want %d", status, test.wantStatus)
+			}
+			if response.Error != test.wantError {
+				t.Errorf("Error = %s; want '%s'", response.Error, test.wantError)
+			}
+			if cookie != test.wantCookie {
+				t.Errorf("Cookie = %s; want '%s'", cookie, test.wantCookie)
+			}
+		})
+	}
 }
