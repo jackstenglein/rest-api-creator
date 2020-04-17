@@ -2,80 +2,80 @@ package test
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	"testing"
 	"github.com/rest_api_creator/backend-sls/actions"
 	"github.com/rest_api_creator/backend-sls/errors"
 	"github.com/rest_api_creator/backend-sls/mock"
+	"testing"
 )
 
-var signupTests = []struct{
+var signupTests = []struct {
 	// Test name and input
-	name string
-	email string
+	name     string
+	email    string
 	password string
 
 	// Mock data
-	token string
-	generateTokenCalls int
-	createUserErr errors.ApiError
-	createUserCalls int
-	cookie string
+	token               string
+	generateTokenCalls  int
+	createUserErr       errors.ApiError
+	createUserCalls     int
+	cookie              string
 	generateCookieCalls int
 
 	// Output
 	wantStatus int
-	wantError string
+	wantError  string
 	wantCookie string
 }{
 	{
-		name: "EmptyEmail",
-		password: "12345678",
+		name:       "EmptyEmail",
+		password:   "12345678",
 		wantStatus: 400,
-		wantError: "Invalid email",
+		wantError:  "Invalid email",
 	},
 	{
-		name: "EmptyPassword",
-		email: "test@example.com",
+		name:       "EmptyPassword",
+		email:      "test@example.com",
 		wantStatus: 400,
-		wantError: "Password is too short",
+		wantError:  "Password is too short",
 	},
 	{
-		name: "EmailMissingAt",
-		email: "testexample.com",
-		password: "12345678",
+		name:       "EmailMissingAt",
+		email:      "testexample.com",
+		password:   "12345678",
 		wantStatus: 400,
-		wantError: "Invalid email",
+		wantError:  "Invalid email",
 	},
 	{
-		name: "EmailMissingDot",
-		email: "test@examplecom",
-		password: "12345678",
+		name:       "EmailMissingDot",
+		email:      "test@examplecom",
+		password:   "12345678",
 		wantStatus: 400,
-		wantError: "Invalid email",
+		wantError:  "Invalid email",
 	},
 	{
-		name: "EmailInUse",
-		email: "test@example.com",
-		password: "12345678",
-		token: "testToken",
+		name:               "EmailInUse",
+		email:              "test@example.com",
+		password:           "12345678",
+		token:              "testToken",
 		generateTokenCalls: 1,
-		createUserErr: errors.NewUserError("Email already in use"),
-		createUserCalls: 1,
-		wantStatus: 400,
-		wantError: "Email already in use",
+		createUserErr:      errors.NewUserError("Email already in use"),
+		createUserCalls:    1,
+		wantStatus:         400,
+		wantError:          "Email already in use",
 	},
 	{
-		name: "Success",
-		email: "test@example.com",
-		password: "12345678",
-		token: "testToken",
-		generateTokenCalls: 1,
-		cookie: "testCookie",
+		name:                "Success",
+		email:               "test@example.com",
+		password:            "12345678",
+		token:               "testToken",
+		generateTokenCalls:  1,
+		cookie:              "testCookie",
 		generateCookieCalls: 1,
-		createUserCalls: 1,
-		wantStatus: 200,
-		wantError: "",
-		wantCookie: "testCookie",
+		createUserCalls:     1,
+		wantStatus:          200,
+		wantError:           "",
+		wantCookie:          "testCookie",
 	},
 }
 

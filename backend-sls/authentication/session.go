@@ -15,7 +15,7 @@ type Authenticator interface {
 	VerifyCookie(string, string, string) (bool, error)
 }
 
-type SessionAuthenticator struct {}
+type SessionAuthenticator struct{}
 
 func NewSessionAuthenticator() *SessionAuthenticator {
 	return &SessionAuthenticator{}

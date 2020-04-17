@@ -2,10 +2,10 @@ package actions
 
 import (
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
 	"github.com/rest_api_creator/backend-sls/authentication"
 	"github.com/rest_api_creator/backend-sls/dao"
 	"github.com/rest_api_creator/backend-sls/errors"
+	"golang.org/x/crypto/bcrypt"
 	"strings"
 )
 
@@ -20,7 +20,7 @@ type SignupResponse struct {
 
 type SignupAction struct {
 	store dao.DataStore
-	auth authentication.Authenticator
+	auth  authentication.Authenticator
 }
 
 func validateEmail(email string) bool {

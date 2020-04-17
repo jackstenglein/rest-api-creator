@@ -14,7 +14,7 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	action := actions.DefaultLoginAction()
 	response, cookie, status := action.Login(loginRequest)
 	json, _ := json.Marshal(response)
-	var headers = map[string]string {
+	var headers = map[string]string{
 		"Set-Cookie": fmt.Sprintf("session=%s;HttpOnly;SameSite=strict;Secure", cookie),
 	}
 	return events.APIGatewayProxyResponse{Headers: headers, Body: string(json), StatusCode: status}, nil

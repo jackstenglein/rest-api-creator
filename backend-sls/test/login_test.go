@@ -2,133 +2,133 @@ package test
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	"testing"
 	"github.com/rest_api_creator/backend-sls/actions"
 	"github.com/rest_api_creator/backend-sls/dao"
 	"github.com/rest_api_creator/backend-sls/errors"
 	"github.com/rest_api_creator/backend-sls/mock"
+	"testing"
 )
 
-var loginTests = []struct{
+var loginTests = []struct {
 	// test name/input
-	name string
-	email string
+	name     string
+	email    string
 	password string
 
 	// mock data
-	getUserErr errors.ApiError
-	user dao.User
-	getUserCalls int
-	generateTokenErr error
-	token string
-	generateTokenCalls int
-	generateCookieErr error
-	cookie string
+	getUserErr          errors.ApiError
+	user                dao.User
+	getUserCalls        int
+	generateTokenErr    error
+	token               string
+	generateTokenCalls  int
+	generateCookieErr   error
+	cookie              string
 	generateCookieCalls int
-	updateUserErr error
-	updateUserCalls int
+	updateUserErr       error
+	updateUserCalls     int
 
 	// output
 	wantStatus int
-	wantError string
+	wantError  string
 	wantCookie string
 }{
 	{
-		name: "EmptyEmail",
-		email: "",
-		password: "12345678",
+		name:       "EmptyEmail",
+		email:      "",
+		password:   "12345678",
 		wantStatus: 400,
-		wantError: "Email and password are required",
+		wantError:  "Email and password are required",
 		wantCookie: "",
 	},
 	{
-		name: "EmptyPassword",
-		email: "test@example.com",
-		password: "",
-		getUserErr: nil,
-		user: dao.User{},
+		name:         "EmptyPassword",
+		email:        "test@example.com",
+		password:     "",
+		getUserErr:   nil,
+		user:         dao.User{},
 		getUserCalls: 0,
-		wantStatus: 400,
-		wantError: "Email and password are required",
-		wantCookie: "",
+		wantStatus:   400,
+		wantError:    "Email and password are required",
+		wantCookie:   "",
 	},
 	{
-		name: "GetUserServerError",
-		email: "test@example.com",
-		password: "12345678",
-		getUserErr: errors.NewServerError("Failed to get user"),
-		user: dao.User{},
+		name:         "GetUserServerError",
+		email:        "test@example.com",
+		password:     "12345678",
+		getUserErr:   errors.NewServerError("Failed to get user"),
+		user:         dao.User{},
 		getUserCalls: 1,
-		wantStatus: 500,
-		wantError: "Failed to get user",
-		wantCookie: "",
+		wantStatus:   500,
+		wantError:    "Failed to get user",
+		wantCookie:   "",
 	},
 	{
-		name: "IncorrectPassword",
-		email: "test@example.com",
-		password: "incorrect",
-		getUserErr: nil,
-		user: dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
+		name:         "IncorrectPassword",
+		email:        "test@example.com",
+		password:     "incorrect",
+		getUserErr:   nil,
+		user:         dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
 		getUserCalls: 1,
-		wantStatus: 400,
-		wantError: "Incorrect email or password",
-		wantCookie: "",
+		wantStatus:   400,
+		wantError:    "Incorrect email or password",
+		wantCookie:   "",
 	},
 	{
-		name: "GenerateTokenFailure",
-		email: "test@example.com",
-		password: "12345678",
-		user: dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
-		getUserCalls: 1,
-		generateTokenErr: errors.NewServerError("Could not read random bytes"),
+		name:               "GenerateTokenFailure",
+		email:              "test@example.com",
+		password:           "12345678",
+		user:               dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
+		getUserCalls:       1,
+		generateTokenErr:   errors.NewServerError("Could not read random bytes"),
 		generateTokenCalls: 1,
-		wantStatus: 500,
-		wantError: "Failed to create auth token",
-		wantCookie: "",
+		wantStatus:         500,
+		wantError:          "Failed to create auth token",
+		wantCookie:         "",
 	},
 	{
-		name: "GenerateCookieFailure",
-		email: "test@example.com",
-		password: "12345678",
-		user: dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
-		getUserCalls: 1,
-		token: "testToken",
-		generateTokenCalls: 1,
-		generateCookieErr: errors.NewServerError("Failed to write to HMAC struct"),
+		name:                "GenerateCookieFailure",
+		email:               "test@example.com",
+		password:            "12345678",
+		user:                dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
+		getUserCalls:        1,
+		token:               "testToken",
+		generateTokenCalls:  1,
+		generateCookieErr:   errors.NewServerError("Failed to write to HMAC struct"),
 		generateCookieCalls: 1,
-		wantStatus: 500,
-		wantError: "Failed to create cookie",
-		wantCookie: "",
+		wantStatus:          500,
+		wantError:           "Failed to create cookie",
+		wantCookie:          "",
 	},
 	{
-		name: "UpdateUserTokenFailure",
-		email: "test@example.com",
-		password: "12345678",
-		user: dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
-		getUserCalls: 1,
-		token: "testToken",
-		generateTokenCalls: 1,
+		name:                "UpdateUserTokenFailure",
+		email:               "test@example.com",
+		password:            "12345678",
+		user:                dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
+		getUserCalls:        1,
+		token:               "testToken",
+		generateTokenCalls:  1,
 		generateCookieCalls: 1,
-		updateUserErr: errors.NewServerError("Failed to update item"),
-		updateUserCalls: 1,
-		wantStatus: 500,
-		wantError: "Failed to update item",
-		wantCookie: "",
+		updateUserErr:       errors.NewServerError("Failed to update item"),
+		updateUserCalls:     1,
+		wantStatus:          500,
+		wantError:           "Failed to update item",
+		wantCookie:          "",
 	},
 	{
-		name: "Success",
-		email: "test@example.com",
-		password: "12345678",
-		user: dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
-		getUserCalls: 1,
-		token: "testToken",
-		generateTokenCalls: 1,
-		cookie: "testCookie",
+		name:                "Success",
+		email:               "test@example.com",
+		password:            "12345678",
+		user:                dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
+		getUserCalls:        1,
+		token:               "testToken",
+		generateTokenCalls:  1,
+		cookie:              "testCookie",
 		generateCookieCalls: 1,
-		updateUserCalls: 1,
-		wantStatus: 200,
-		wantError: "",
-		wantCookie: "testCookie",
+		updateUserCalls:     1,
+		wantStatus:          200,
+		wantError:           "",
+		wantCookie:          "testCookie",
 	},
 }
 

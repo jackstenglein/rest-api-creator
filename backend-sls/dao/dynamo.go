@@ -2,13 +2,13 @@ package dao
 
 import (
 	"fmt"
-	"os"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/rest_api_creator/backend-sls/errors"
+	"os"
 )
 
 type DynamoStore struct {
@@ -79,7 +79,6 @@ func (store *DynamoStore) GetUser(email string) (User, errors.ApiError) {
 		return user, errors.NewServerError(err.Error())
 	}
 
-
 	return user, nil
 }
 
@@ -95,7 +94,7 @@ func (store *DynamoStore) UpdateUserToken(email string, token string) error {
 				S: aws.String(email),
 			},
 		},
-		TableName: aws.String(os.Getenv("TABLE_NAME")),
+		TableName:        aws.String(os.Getenv("TABLE_NAME")),
 		UpdateExpression: aws.String("SET SessionToken=:t"),
 	}
 

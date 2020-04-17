@@ -1,9 +1,9 @@
 package actions
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"github.com/rest_api_creator/backend-sls/authentication"
 	"github.com/rest_api_creator/backend-sls/dao"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type LoginRequest SignupRequest
@@ -11,7 +11,7 @@ type LoginResponse SignupResponse
 
 type LoginAction struct {
 	store dao.DataStore
-	auth authentication.Authenticator
+	auth  authentication.Authenticator
 }
 
 func DefaultLoginAction() *LoginAction {
