@@ -15,7 +15,7 @@ type LoginAction struct {
 }
 
 func DefaultLoginAction() *LoginAction {
-	return &LoginAction{dao.NewDynamoStore(), authentication.NewSessionAuthenticator()}
+	return &LoginAction{dao.DefaultDynamoStore(), authentication.NewSessionAuthenticator()}
 }
 
 func NewLoginAction(store dao.DataStore, auth authentication.Authenticator) *LoginAction {

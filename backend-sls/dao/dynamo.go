@@ -2,21 +2,32 @@ package dao
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/rest_api_creator/backend-sls/errors"
-	"os"
 )
 
-type DynamoStore struct {
-	service *dynamodb.DynamoDB
+type DynamoService interface {
+	GetItem(*dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error)
+	PutItem(*dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
+	UpdateItem(*dynamodb.UpdateItemInput) (*dynamodb.UpdateItemOutput, error)
 }
 
-func NewDynamoStore() *DynamoStore {
+type DynamoStore struct {
+	service DynamoService
+}
+
+func DefaultDynamoStore() *DynamoStore {
 	return &DynamoStore{dynamodb.New(session.New())}
+}
+
+func NewDynamoStore(service DynamoService) *DynamoStore {
+	return &DynamoStore{service}
 }
 
 func (store *DynamoStore) CreateUser(email string, password string, token string) errors.ApiError {
@@ -80,6 +91,25 @@ func (store *DynamoStore) GetUser(email string) (User, errors.ApiError) {
 	}
 
 	return user, nil
+}
+
+func (store *DynamoStore) GetProject(email string, projectId string) (Project, error) {
+	project := Project{}
+	input := &dynamodb.GetItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"Email": {
+				S: aws.String(email),
+			},
+		},
+		ProjectionExpression: aws.String(fmt.Sprintf("Project.%s", projectId)),
+		TableName:            aws.String(os.Getenv("TABLE_NAME")),
+	}
+	result, err := store.service.GetItem(input)
+	if err != nil {
+		return project, err
+	}
+	err = dynamodbattribute.UnmarshalMap(result.Item, &project)
+	return project, err
 }
 
 func (store *DynamoStore) UpdateUserToken(email string, token string) error {

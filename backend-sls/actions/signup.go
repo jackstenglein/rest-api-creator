@@ -38,7 +38,7 @@ func validatePassword(password string) errors.ApiError {
 }
 
 func DefaultSignupAction() *SignupAction {
-	return &SignupAction{dao.NewDynamoStore(), authentication.NewSessionAuthenticator()}
+	return &SignupAction{dao.DefaultDynamoStore(), authentication.NewSessionAuthenticator()}
 }
 
 func NewSignupAction(store dao.DataStore, auth authentication.Authenticator) *SignupAction {
