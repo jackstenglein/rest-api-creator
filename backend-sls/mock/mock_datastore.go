@@ -6,6 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	dao "github.com/rest_api_creator/backend-sls/dao"
 	errors "github.com/rest_api_creator/backend-sls/errors"
 	reflect "reflect"
 )
@@ -45,4 +46,33 @@ func (m *MockDataStore) CreateUser(arg0, arg1, arg2 string) errors.ApiError {
 func (mr *MockDataStoreMockRecorder) CreateUser(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockDataStore)(nil).CreateUser), arg0, arg1, arg2)
+}
+
+// GetUser mocks base method
+func (m *MockDataStore) GetUser(arg0 string) (dao.User, errors.ApiError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUser", arg0)
+	ret0, _ := ret[0].(dao.User)
+	ret1, _ := ret[1].(errors.ApiError)
+	return ret0, ret1
+}
+
+// GetUser indicates an expected call of GetUser
+func (mr *MockDataStoreMockRecorder) GetUser(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockDataStore)(nil).GetUser), arg0)
+}
+
+// UpdateUserToken mocks base method
+func (m *MockDataStore) UpdateUserToken(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserToken", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserToken indicates an expected call of UpdateUserToken
+func (mr *MockDataStoreMockRecorder) UpdateUserToken(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserToken", reflect.TypeOf((*MockDataStore)(nil).UpdateUserToken), arg0, arg1)
 }

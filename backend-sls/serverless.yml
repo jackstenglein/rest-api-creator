@@ -75,6 +75,12 @@ functions:
       - http:
           path: signup
           method: post
+  login:
+    handler: bin/login
+    events:
+      - http:
+          path: login
+          method: put
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
@@ -123,10 +129,10 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: email
+          - AttributeName: Email
             AttributeType: S
         KeySchema:
-          - AttributeName: email
+          - AttributeName: Email
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
