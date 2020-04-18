@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -29,8 +30,8 @@ var getProjectTests = []struct {
 	projectionExpression string
 	mockOutput           *dynamodb.GetItemOutput
 	mockErr              error
-	wantProject          dao.Project
-	wantErr              error
+	wantProject          *dao.Project
+	wantErr              string
 }{
 	{
 		name:                 "TestError",
@@ -40,8 +41,7 @@ var getProjectTests = []struct {
 		projectionExpression: fmt.Sprintf("Project.%s", projectId),
 		mockOutput:           getMockOutput(project),
 		mockErr:              errors.New("DynamoDB error"),
-		wantProject:          dao.Project{},
-		wantErr:              errors.New("DynamoDB error"),
+		wantErr:              "Failed DynamoDB GetItem call",
 	},
 	{
 		name:                 "TestSuccess",
@@ -50,7 +50,7 @@ var getProjectTests = []struct {
 		projectName:          projectName,
 		projectionExpression: fmt.Sprintf("Project.%s", projectId),
 		mockOutput:           getMockOutput(project),
-		wantProject:          project,
+		wantProject:          &project,
 	},
 	{
 		name:                 "NonexistentProject",
@@ -59,7 +59,7 @@ var getProjectTests = []struct {
 		projectName:          projectName,
 		projectionExpression: fmt.Sprintf("Project.%s", projectId),
 		mockOutput:           &dynamodb.GetItemOutput{},
-		wantProject:          dao.Project{},
+		wantProject:          &dao.Project{},
 	},
 }
 
@@ -88,11 +88,17 @@ func TestGetProject(t *testing.T) {
 
 			mockService.EXPECT().GetItem(input).Return(test.mockOutput, test.mockErr).Times(1)
 			project, err := dynamo.GetProject(test.email, test.projectId)
-			if !reflect.DeepEqual(err, test.wantErr) {
-				t.Errorf("Got error %v; want %v", err, test.wantErr)
-			}
+
 			if !reflect.DeepEqual(project, test.wantProject) {
 				t.Errorf("Got project %v; want %v", project, test.wantProject)
+			}
+
+			if err == nil {
+				if test.wantErr != "" {
+					t.Errorf("Got error nil; want '%s'", test.wantErr)
+				}
+			} else if !strings.Contains(err.Error(), test.wantErr) {
+				t.Errorf("Got error %s; want '%s'", err, test.wantErr)
 			}
 		})
 	}

@@ -1,11 +1,13 @@
 package test
 
 import (
+	"strings"
+	"testing"
+
 	gomock "github.com/golang/mock/gomock"
 	"github.com/rest_api_creator/backend-sls/actions"
-	"github.com/rest_api_creator/backend-sls/errors"
+	apierrors "github.com/rest_api_creator/backend-sls/errors"
 	"github.com/rest_api_creator/backend-sls/mock"
-	"testing"
 )
 
 var signupTests = []struct {
@@ -17,41 +19,36 @@ var signupTests = []struct {
 	// Mock data
 	token               string
 	generateTokenCalls  int
-	createUserErr       errors.ApiError
+	createUserErr       error
 	createUserCalls     int
 	cookie              string
 	generateCookieCalls int
 
 	// Output
-	wantStatus int
 	wantError  string
 	wantCookie string
 }{
 	{
-		name:       "EmptyEmail",
-		password:   "12345678",
-		wantStatus: 400,
-		wantError:  "Invalid email",
+		name:      "EmptyEmail",
+		password:  "12345678",
+		wantError: "Invalid email",
 	},
 	{
-		name:       "EmptyPassword",
-		email:      "test@example.com",
-		wantStatus: 400,
-		wantError:  "Password is too short",
+		name:      "EmptyPassword",
+		email:     "test@example.com",
+		wantError: "Password is too short",
 	},
 	{
-		name:       "EmailMissingAt",
-		email:      "testexample.com",
-		password:   "12345678",
-		wantStatus: 400,
-		wantError:  "Invalid email",
+		name:      "EmailMissingAt",
+		email:     "testexample.com",
+		password:  "12345678",
+		wantError: "Invalid email",
 	},
 	{
-		name:       "EmailMissingDot",
-		email:      "test@examplecom",
-		password:   "12345678",
-		wantStatus: 400,
-		wantError:  "Invalid email",
+		name:      "EmailMissingDot",
+		email:     "test@examplecom",
+		password:  "12345678",
+		wantError: "Invalid email",
 	},
 	{
 		name:               "EmailInUse",
@@ -59,9 +56,8 @@ var signupTests = []struct {
 		password:           "12345678",
 		token:              "testToken",
 		generateTokenCalls: 1,
-		createUserErr:      errors.NewUserError("Email already in use"),
+		createUserErr:      apierrors.NewUserError("Email already in use"),
 		createUserCalls:    1,
-		wantStatus:         400,
 		wantError:          "Email already in use",
 	},
 	{
@@ -73,7 +69,6 @@ var signupTests = []struct {
 		cookie:              "testCookie",
 		generateCookieCalls: 1,
 		createUserCalls:     1,
-		wantStatus:          200,
 		wantError:           "",
 		wantCookie:          "testCookie",
 	},
@@ -96,17 +91,18 @@ func TestSignup(t *testing.T) {
 			mockAuth.EXPECT().GenerateCookie(test.email, test.token).Return(test.cookie, nil).Times(test.generateCookieCalls)
 
 			// Perform the test
-			response, cookie, status := action.Signup(request)
+			cookie, err := action.Signup(request)
 
 			// Verify the results
-			if status != test.wantStatus {
-				t.Errorf("Status = %d; want %d", status, test.wantStatus)
-			}
-			if response.Error != test.wantError {
-				t.Errorf("Error = %s; want '%s'", response.Error, test.wantError)
-			}
 			if cookie != test.wantCookie {
 				t.Errorf("Cookie = %s; want '%s'", cookie, test.wantCookie)
+			}
+			if err == nil {
+				if test.wantError != "" {
+					t.Errorf("Error = nil; want '%s'", test.wantError)
+				}
+			} else if !strings.Contains(err.Error(), test.wantError) {
+				t.Errorf("Error = %s; want '%s'", err, test.wantError)
 			}
 		})
 	}

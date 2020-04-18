@@ -2,20 +2,18 @@ package actions
 
 import (
 	"fmt"
+	"strings"
+
+	"github.com/pkg/errors"
 	"github.com/rest_api_creator/backend-sls/authentication"
 	"github.com/rest_api_creator/backend-sls/dao"
-	"github.com/rest_api_creator/backend-sls/errors"
+	apierrors "github.com/rest_api_creator/backend-sls/errors"
 	"golang.org/x/crypto/bcrypt"
-	"strings"
 )
 
 type SignupRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-}
-
-type SignupResponse struct {
-	Error string `json:"error,omitempty"`
 }
 
 type SignupAction struct {
@@ -30,9 +28,9 @@ func validateEmail(email string) bool {
 	return true
 }
 
-func validatePassword(password string) errors.ApiError {
+func validatePassword(password string) error {
 	if len(password) < 8 {
-		return errors.NewUserError("Password is too short")
+		return apierrors.NewUserError("Password is too short")
 	}
 	return nil
 }
@@ -45,36 +43,38 @@ func NewSignupAction(store dao.DataStore, auth authentication.Authenticator) *Si
 	return &SignupAction{store, auth}
 }
 
-func (action *SignupAction) Signup(request SignupRequest) (SignupResponse, string, int) {
+func (action *SignupAction) Signup(request SignupRequest) (string, error) {
+
 	ok := validateEmail(request.Email)
 	if !ok {
-		return SignupResponse{"Invalid email"}, "", 400
+		return "", apierrors.NewUserError("Invalid email")
 	}
 
-	aerr := validatePassword(request.Password)
-	if aerr != nil {
-		return SignupResponse{aerr.Error()}, "", aerr.StatusCode()
+	err := validatePassword(request.Password)
+	if err != nil {
+		return "", errors.Wrap(err, "Invalid password")
 	}
 
 	bytes, err := bcrypt.GenerateFromPassword([]byte(request.Password), 14)
 	if err != nil {
-		return SignupResponse{"Failed to hash password"}, "", 500
+		return "", errors.Wrap(err, "Failed to hash password")
 	}
 
 	token, err := action.auth.GenerateToken()
 	if err != nil {
-		return SignupResponse{"Failed to create auth token"}, "", 500
+		return "", errors.Wrap(err, "Failed to create auth token")
 	}
 
-	aerr = action.store.CreateUser(request.Email, string(bytes), token)
-	if aerr != nil {
-		return SignupResponse{aerr.Error()}, "", aerr.StatusCode()
+	err = action.store.CreateUser(request.Email, string(bytes), token)
+	if err != nil {
+		return "", errors.Wrap(err, "Failed to create user")
 	}
 
 	cookie, err := action.auth.GenerateCookie(request.Email, token)
 	if err != nil {
-		fmt.Println("Unable to generate cookie:", err)
+		// This error doesn't affect the creation of the user, so don't return it
+		fmt.Printf("%+v", err)
 	}
 
-	return SignupResponse{""}, cookie, 200
+	return cookie, nil
 }

@@ -1,14 +1,15 @@
 package test
 
 import (
+	"errors"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/rest_api_creator/backend-sls/dao"
 
 	gomock "github.com/golang/mock/gomock"
 	"github.com/rest_api_creator/backend-sls/actions"
-	"github.com/rest_api_creator/backend-sls/errors"
 	"github.com/rest_api_creator/backend-sls/mock"
 )
 
@@ -20,22 +21,22 @@ var getProjectActionTests = []struct {
 	verifyCookieResult bool
 	verifyCookieErr    error
 	verifyCookieCalls  int
-	getProjectResult   dao.Project
+	getProjectResult   *dao.Project
 	getProjectErr      error
 	getProjectCalls    int
 
-	wantError   error
-	wantProject dao.Project
+	wantError   string
+	wantProject *dao.Project
 }{
 	{
 		name:      "EmptyProject",
-		wantError: errors.NewUserError("project is required"),
+		wantError: "Parameter `id` is required",
 	},
 	{
 		name:      "InvalidCookieFormat",
 		projectId: "projectId",
 		cookie:    "incorrectcookietype",
-		wantError: errors.NewUserError("Not authenticated"),
+		wantError: "Not authenticated",
 	},
 	{
 		name:              "VerifyCookieError",
@@ -43,7 +44,7 @@ var getProjectActionTests = []struct {
 		cookie:            "email#token#hmac",
 		verifyCookieErr:   errors.New("Unable to decode hex string"),
 		verifyCookieCalls: 1,
-		wantError:         errors.New("Unable to decode hex string"),
+		wantError:         "Failed to verify cookie",
 	},
 	{
 		name:               "InvalidCookie",
@@ -51,7 +52,7 @@ var getProjectActionTests = []struct {
 		cookie:             "email#token#hmac",
 		verifyCookieResult: false,
 		verifyCookieCalls:  1,
-		wantError:          errors.NewUserError("Not authenticated"),
+		wantError:          "Not authenticated",
 	},
 	{
 		name:               "DynamoError",
@@ -61,7 +62,7 @@ var getProjectActionTests = []struct {
 		verifyCookieCalls:  1,
 		getProjectErr:      errors.New("Dynamo failed"),
 		getProjectCalls:    1,
-		wantError:          errors.New("Dynamo failed"),
+		wantError:          "Failed to get project",
 	},
 	{
 		name:               "Success",
@@ -69,10 +70,10 @@ var getProjectActionTests = []struct {
 		cookie:             "email#token#hmac",
 		verifyCookieResult: true,
 		verifyCookieCalls:  1,
-		getProjectResult:   dao.Project{Id: "project", Name: "Asdf"},
+		getProjectResult:   &dao.Project{Id: "project", Name: "Asdf"},
 		getProjectCalls:    1,
-		wantError:          nil,
-		wantProject:        dao.Project{Id: "project", Name: "Asdf"},
+		wantError:          "",
+		wantProject:        &dao.Project{Id: "project", Name: "Asdf"},
 	},
 }
 
@@ -92,14 +93,18 @@ func TestGetProjectAction(t *testing.T) {
 			mockStore.EXPECT().GetProject("email", test.projectId).Return(test.getProjectResult, test.getProjectErr).Times(test.getProjectCalls)
 
 			// Perform the test
-			response := action.GetProject(request)
+			project, err := action.GetProject(request)
 
 			// Verify results
-			if !reflect.DeepEqual(response.Error, test.wantError) {
-				t.Errorf("Got error %v; want %v", response.Error, test.wantError)
+			if !reflect.DeepEqual(project, test.wantProject) {
+				t.Errorf("Got project %v; want %v", project, test.wantProject)
 			}
-			if !reflect.DeepEqual(response.Project, test.wantProject) {
-				t.Errorf("Got error %v; want %v", response.Project, test.wantProject)
+			if err == nil {
+				if test.wantError != "" {
+					t.Errorf("Got error nil; want '%s'", test.wantError)
+				}
+			} else if !strings.Contains(err.Error(), test.wantError) {
+				t.Errorf("Got error %s; want '%s'", err, test.wantError)
 			}
 		})
 	}

@@ -1,12 +1,14 @@
 package test
 
 import (
+	"errors"
+	"strings"
+	"testing"
+
 	gomock "github.com/golang/mock/gomock"
 	"github.com/rest_api_creator/backend-sls/actions"
 	"github.com/rest_api_creator/backend-sls/dao"
-	"github.com/rest_api_creator/backend-sls/errors"
 	"github.com/rest_api_creator/backend-sls/mock"
-	"testing"
 )
 
 var loginTests = []struct {
@@ -16,7 +18,7 @@ var loginTests = []struct {
 	password string
 
 	// mock data
-	getUserErr          errors.ApiError
+	getUserErr          error
 	user                dao.User
 	getUserCalls        int
 	generateTokenErr    error
@@ -29,7 +31,6 @@ var loginTests = []struct {
 	updateUserCalls     int
 
 	// output
-	wantStatus int
 	wantError  string
 	wantCookie string
 }{
@@ -37,7 +38,6 @@ var loginTests = []struct {
 		name:       "EmptyEmail",
 		email:      "",
 		password:   "12345678",
-		wantStatus: 400,
 		wantError:  "Email and password are required",
 		wantCookie: "",
 	},
@@ -48,7 +48,6 @@ var loginTests = []struct {
 		getUserErr:   nil,
 		user:         dao.User{},
 		getUserCalls: 0,
-		wantStatus:   400,
 		wantError:    "Email and password are required",
 		wantCookie:   "",
 	},
@@ -56,10 +55,9 @@ var loginTests = []struct {
 		name:         "GetUserServerError",
 		email:        "test@example.com",
 		password:     "12345678",
-		getUserErr:   errors.NewServerError("Failed to get user"),
+		getUserErr:   errors.New("DynamoDB error"),
 		user:         dao.User{},
 		getUserCalls: 1,
-		wantStatus:   500,
 		wantError:    "Failed to get user",
 		wantCookie:   "",
 	},
@@ -70,7 +68,6 @@ var loginTests = []struct {
 		getUserErr:   nil,
 		user:         dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
 		getUserCalls: 1,
-		wantStatus:   400,
 		wantError:    "Incorrect email or password",
 		wantCookie:   "",
 	},
@@ -80,9 +77,8 @@ var loginTests = []struct {
 		password:           "12345678",
 		user:               dao.User{Email: "test@example.com", Password: "$2a$14$MNkzNEv8Su7mHfLPIdWoU.t5lElbvlnDka11w27zgfy6Sw44zZsku"},
 		getUserCalls:       1,
-		generateTokenErr:   errors.NewServerError("Could not read random bytes"),
+		generateTokenErr:   errors.New("Could not read random bytes"),
 		generateTokenCalls: 1,
-		wantStatus:         500,
 		wantError:          "Failed to create auth token",
 		wantCookie:         "",
 	},
@@ -94,9 +90,8 @@ var loginTests = []struct {
 		getUserCalls:        1,
 		token:               "testToken",
 		generateTokenCalls:  1,
-		generateCookieErr:   errors.NewServerError("Failed to write to HMAC struct"),
+		generateCookieErr:   errors.New("Failed to write to HMAC struct"),
 		generateCookieCalls: 1,
-		wantStatus:          500,
 		wantError:           "Failed to create cookie",
 		wantCookie:          "",
 	},
@@ -109,10 +104,9 @@ var loginTests = []struct {
 		token:               "testToken",
 		generateTokenCalls:  1,
 		generateCookieCalls: 1,
-		updateUserErr:       errors.NewServerError("Failed to update item"),
+		updateUserErr:       errors.New("DynamoDB failure"),
 		updateUserCalls:     1,
-		wantStatus:          500,
-		wantError:           "Failed to update item",
+		wantError:           "Failed to update auth token",
 		wantCookie:          "",
 	},
 	{
@@ -126,7 +120,6 @@ var loginTests = []struct {
 		cookie:              "testCookie",
 		generateCookieCalls: 1,
 		updateUserCalls:     1,
-		wantStatus:          200,
 		wantError:           "",
 		wantCookie:          "testCookie",
 	},
@@ -150,17 +143,18 @@ func TestLogin(t *testing.T) {
 			mockDataStore.EXPECT().UpdateUserToken(test.email, test.token).Return(test.updateUserErr).Times(test.updateUserCalls)
 
 			// Perform the action
-			response, cookie, status := action.Login(request)
+			cookie, err := action.Login(request)
 
 			// Verify the results
-			if status != test.wantStatus {
-				t.Errorf("Status = %d; want %d", status, test.wantStatus)
-			}
-			if response.Error != test.wantError {
-				t.Errorf("Error = %s; want '%s'", response.Error, test.wantError)
-			}
 			if cookie != test.wantCookie {
 				t.Errorf("Cookie = %s; want '%s'", cookie, test.wantCookie)
+			}
+			if err == nil {
+				if test.wantError != "" {
+					t.Errorf("Error = nil; want '%s'", test.wantError)
+				}
+			} else if !strings.Contains(err.Error(), test.wantError) {
+				t.Errorf("Error = %s; want '%s'", err, test.wantError)
 			}
 		})
 	}

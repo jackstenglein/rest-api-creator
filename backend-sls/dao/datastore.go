@@ -1,7 +1,5 @@
 package dao
 
-import "github.com/rest_api_creator/backend-sls/errors"
-
 type User struct {
 	Email    string `dynamodbav:"Email" json:"email"`
 	Password string `dynamodbav:"Password" json:"-"`
@@ -11,7 +9,7 @@ type User struct {
 type Project struct {
 	Id      string   `dynamodbav:"Id" json:"id"`
 	Name    string   `dynamodbav:"Name" json:"name"`
-	Objects []Object `dynamodbav:"Objects" json:"objects"`
+	Objects []Object `dynamodbav:"Objects" json:"objects,omitempty"`
 }
 
 type Object struct {
@@ -21,8 +19,8 @@ type Object struct {
 }
 
 type DataStore interface {
-	CreateUser(string, string, string) errors.ApiError
-	GetUser(string) (User, errors.ApiError)
-	GetProject(string, string) (Project, error)
+	CreateUser(string, string, string) error
+	GetUser(string) (User, error)
+	GetProject(string, string) (*Project, error)
 	UpdateUserToken(string, string) error
 }

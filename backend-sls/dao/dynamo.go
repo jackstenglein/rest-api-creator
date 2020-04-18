@@ -9,7 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/rest_api_creator/backend-sls/errors"
+	"github.com/pkg/errors"
+	apierrors "github.com/rest_api_creator/backend-sls/errors"
 )
 
 type DynamoService interface {
@@ -30,7 +31,7 @@ func NewDynamoStore(service DynamoService) *DynamoStore {
 	return &DynamoStore{service}
 }
 
-func (store *DynamoStore) CreateUser(email string, password string, token string) errors.ApiError {
+func (store *DynamoStore) CreateUser(email string, password string, token string) error {
 	input := &dynamodb.PutItemInput{
 		ConditionExpression: aws.String("attribute_not_exists(email)"),
 		Item: map[string]*dynamodb.AttributeValue{
@@ -49,24 +50,18 @@ func (store *DynamoStore) CreateUser(email string, password string, token string
 
 	_, err := store.service.PutItem(input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeConditionalCheckFailedException:
-				return errors.NewUserError("Email already in use")
-			default:
-				fmt.Println(aerr.Error())
+		var aerr awserr.Error
+		if errors.As(err, &aerr) {
+			if aerr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
+				return apierrors.NewUserError("Email already in use")
 			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			fmt.Println(err.Error())
 		}
-		return errors.NewServerError(err.Error())
+		return errors.Wrap(err, "Failed DynamoDB PutItem call")
 	}
 	return nil
 }
 
-func (store *DynamoStore) GetUser(email string) (User, errors.ApiError) {
+func (store *DynamoStore) GetUser(email string) (User, error) {
 	user := User{}
 
 	input := &dynamodb.GetItemInput{
@@ -80,21 +75,18 @@ func (store *DynamoStore) GetUser(email string) (User, errors.ApiError) {
 
 	result, err := store.service.GetItem(input)
 	if err != nil {
-		fmt.Println(err)
-		return user, errors.NewServerError(err.Error())
+		return user, errors.Wrap(err, "Failed DynamoDB GetItem call")
 	}
 
 	err = dynamodbattribute.UnmarshalMap(result.Item, &user)
 	if err != nil {
-		fmt.Println(err)
-		return user, errors.NewServerError(err.Error())
+		return user, errors.Wrap(err, "Failed to unmarshal GetItem result")
 	}
 
 	return user, nil
 }
 
-func (store *DynamoStore) GetProject(email string, projectId string) (Project, error) {
-	project := Project{}
+func (store *DynamoStore) GetProject(email string, projectId string) (*Project, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"Email": {
@@ -106,10 +98,15 @@ func (store *DynamoStore) GetProject(email string, projectId string) (Project, e
 	}
 	result, err := store.service.GetItem(input)
 	if err != nil {
-		return project, err
+		return nil, errors.Wrap(err, "Failed DynamoDB GetItem call")
 	}
+
+	project := Project{}
 	err = dynamodbattribute.UnmarshalMap(result.Item, &project)
-	return project, err
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to unmarshal GetItem result")
+	}
+	return &project, nil
 }
 
 func (store *DynamoStore) UpdateUserToken(email string, token string) error {
@@ -129,5 +126,5 @@ func (store *DynamoStore) UpdateUserToken(email string, token string) error {
 	}
 
 	_, err := store.service.UpdateItem(input)
-	return err
+	return errors.Wrap(err, "Failed DynamoDB UpdateItem call")
 }
