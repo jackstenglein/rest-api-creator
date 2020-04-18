@@ -93,7 +93,7 @@ func (store *DynamoStore) GetProject(email string, projectId string) (*Project, 
 				S: aws.String(email),
 			},
 		},
-		ProjectionExpression: aws.String(fmt.Sprintf("Project.%s", projectId)),
+		ProjectionExpression: aws.String(fmt.Sprintf("Projects.%s", projectId)),
 		TableName:            aws.String(os.Getenv("TABLE_NAME")),
 	}
 	result, err := store.service.GetItem(input)

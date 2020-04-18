@@ -88,7 +88,7 @@ func TestGetProjectAction(t *testing.T) {
 			action := actions.NewGetProjectAction(mockStore, mockAuth)
 
 			// Setup using test input and mock data
-			request := actions.GetProjectRequest{ProjectId: test.projectId, Cookie: test.cookie}
+			request := actions.GetProjectRequest{Id: test.projectId, Cookie: test.cookie}
 			mockAuth.EXPECT().VerifyCookie("email", "token", "hmac", mockStore).Return(test.verifyCookieResult, test.verifyCookieErr).Times(test.verifyCookieCalls)
 			mockStore.EXPECT().GetProject("email", test.projectId).Return(test.getProjectResult, test.getProjectErr).Times(test.getProjectCalls)
 

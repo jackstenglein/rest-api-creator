@@ -8,13 +8,8 @@ import (
 )
 
 type GetProjectRequest struct {
-	ProjectId string `json:"project"`
-	Cookie    string `json:"-"`
-}
-
-type GetProjectResponse struct {
-	Project dao.Project `json:"project,omitempty"`
-	Error   error       `json:"error,omitempty"`
+	Id     string `json:"id"`
+	Cookie string `json:"-"`
 }
 
 type GetProjectAction struct {
@@ -22,12 +17,16 @@ type GetProjectAction struct {
 	auth  authentication.Authenticator
 }
 
+func DefaultGetProjectAction() *GetProjectAction {
+	return &GetProjectAction{store: dao.DefaultDynamoStore(), auth: authentication.NewSessionAuthenticator()}
+}
+
 func NewGetProjectAction(store dao.DataStore, auth authentication.Authenticator) *GetProjectAction {
 	return &GetProjectAction{store: store, auth: auth}
 }
 
 func (action *GetProjectAction) GetProject(request GetProjectRequest) (*dao.Project, error) {
-	if request.ProjectId == "" {
+	if request.Id == "" {
 		return nil, apierrors.NewUserError("Parameter `id` is required")
 	}
 
@@ -44,6 +43,6 @@ func (action *GetProjectAction) GetProject(request GetProjectRequest) (*dao.Proj
 		return nil, apierrors.NewUserError("Not authenticated")
 	}
 
-	project, err := action.store.GetProject(email, request.ProjectId)
+	project, err := action.store.GetProject(email, request.Id)
 	return project, errors.Wrap(err, "Failed to get project")
 }
