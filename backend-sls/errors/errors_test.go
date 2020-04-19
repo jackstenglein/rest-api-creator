@@ -12,7 +12,7 @@ var wrapErr = Wrap(userErr, "Additional context 1")
 func TestErrType(t *testing.T) {
 	for _, test := range []struct {
 		name         string
-		errptr       *Err
+		errptr       *err
 		wantCause    error
 		wantError    string
 		wantFile     string
@@ -26,7 +26,7 @@ func TestErrType(t *testing.T) {
 		},
 		{
 			name:         "WrapperErr",
-			errptr:       &Err{cause: userErr, message: "Additional context 2", previous: wrapErr, user: userErr, file: "testFile", line: 13},
+			errptr:       &err{orig: userErr, msg: "Additional context 2", prev: wrapErr, user: userErr, file: "testFile", line: 13},
 			wantCause:    userErr,
 			wantError:    "Additional context 2: Additional context 1: Invalid input",
 			wantFile:     "testFile",
@@ -38,22 +38,22 @@ func TestErrType(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			err := test.errptr
-			if err.Cause() != test.wantCause {
-				t.Errorf("Got cause %v; want %v", err.Cause(), test.wantCause)
+			if err.cause() != test.wantCause {
+				t.Errorf("Got cause %v; want %v", err.cause(), test.wantCause)
 			}
 			if err.Error() != test.wantError {
 				t.Errorf("Got error '%s'; want '%s'", err.Error(), test.wantError)
 			}
-			if err.Message() != test.wantMessage {
-				t.Errorf("Got message '%s'; want '%s'", err.Message(), test.wantMessage)
+			if err.message() != test.wantMessage {
+				t.Errorf("Got message '%s'; want '%s'", err.message(), test.wantMessage)
 			}
-			if err.Previous() != test.wantPrevious {
-				t.Errorf("Got previous %v; want %v", err.Previous(), test.wantPrevious)
+			if err.previous() != test.wantPrevious {
+				t.Errorf("Got previous %v; want %v", err.previous(), test.wantPrevious)
 			}
-			if err.UserError() != test.wantUser {
-				t.Errorf("Got user %v; want %v", err.UserError(), test.wantUser)
+			if err.userError() != test.wantUser {
+				t.Errorf("Got user %v; want %v", err.userError(), test.wantUser)
 			}
-			file, line := err.Location()
+			file, line := err.location()
 			if file != test.wantFile {
 				t.Errorf("Got file %v; want %v", file, test.wantFile)
 			}
@@ -152,13 +152,13 @@ func TestErrorFunctions(t *testing.T) {
 
 func TestErrorStack(t *testing.T) {
 	t.Run("NilStack", func(t *testing.T) {
-		var stack *ErrorStack = nil
-		if stack.HasElements() {
+		var stack *errorStack = nil
+		if stack.hasElements() {
 			t.Error("Nil stack has elements")
 		}
-		stack.Push("Nil")
-		stack.Push("Nil")
-		result := stack.Pop()
+		stack.push("Nil")
+		stack.push("Nil")
+		result := stack.pop()
 		if result != "" {
 			t.Errorf("Got result '%s'; want ''", result)
 		}
@@ -168,9 +168,9 @@ func TestErrorStack(t *testing.T) {
 		err1 := Wrap(baseErr, "Message err 1")
 		err2 := Wrap(err1, "Message err 2")
 		err3 := Wrap(err2, "Message err 3")
-		stack := Stack(err3)
+		stack := stack(err3)
 
-		if !stack.HasElements() {
+		if !stack.hasElements() {
 			t.Error("Filled stack has no elements")
 		}
 
@@ -181,7 +181,7 @@ func TestErrorStack(t *testing.T) {
 			"github.com/rest_api_creator/backend-sls/errors/errors_test.go(170): Message err 3",
 		}
 		for _, wantLine := range wantLines {
-			gotLine := stack.Pop()
+			gotLine := stack.pop()
 			if gotLine != wantLine {
 				t.Errorf("Got line '%s'; want '%s'", gotLine, wantLine)
 			}

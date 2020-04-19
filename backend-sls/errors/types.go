@@ -3,46 +3,46 @@ package errors
 import "strings"
 
 type annotation interface {
-	Location() (string, int)
-	Previous() error
+	location() (string, int)
+	previous() error
 }
 
 type causer interface {
-	Cause() error
+	cause() error
 }
 
 type messager interface {
-	Message() string
+	message() string
 }
 
 type user interface {
-	UserError() error
+	userError() error
 }
 
-type Err struct {
-	cause    error
-	file     string
-	line     int
-	message  string
-	previous error
-	user     error
+type err struct {
+	orig error
+	file string
+	line int
+	msg  string
+	prev error
+	user error
 }
 
-func (e *Err) Cause() error {
+func (e *err) cause() error {
 	if e == nil {
 		return nil
 	}
-	return e.cause
+	return e.orig
 }
 
-func (e *Err) Error() string {
+func (e *err) Error() string {
 	if e == nil {
 		return ""
 	}
 
 	var b strings.Builder
-	b.WriteString(e.message)
-	err := e.previous
+	b.WriteString(e.msg)
+	err := e.prev
 	for err != nil {
 		b.WriteString(": ")
 		b.WriteString(Message(err))
@@ -51,28 +51,28 @@ func (e *Err) Error() string {
 	return b.String()
 }
 
-func (e *Err) Location() (string, int) {
+func (e *err) location() (string, int) {
 	if e == nil {
 		return "", 0
 	}
 	return e.file, e.line
 }
 
-func (e *Err) Message() string {
+func (e *err) message() string {
 	if e == nil {
 		return ""
 	}
-	return e.message
+	return e.msg
 }
 
-func (e *Err) Previous() error {
+func (e *err) previous() error {
 	if e == nil {
 		return nil
 	}
-	return e.previous
+	return e.prev
 }
 
-func (e *Err) UserError() error {
+func (e *err) userError() error {
 	if e == nil {
 		return nil
 	}

@@ -2,22 +2,22 @@ package errors
 
 import "fmt"
 
-type ErrorStack struct {
+type errorStack struct {
 	lines []string
 }
 
-func NewErrorStack() *ErrorStack {
+func newErrorStack() *errorStack {
 	lines := make([]string, 0, 3)
-	return &ErrorStack{lines}
+	return &errorStack{lines}
 }
 
-func (stack *ErrorStack) Push(line string) {
+func (stack *errorStack) push(line string) {
 	if stack != nil {
 		stack.lines = append(stack.lines, line)
 	}
 }
 
-func (stack *ErrorStack) Pop() string {
+func (stack *errorStack) pop() string {
 	if stack == nil || len(stack.lines) == 0 {
 		return ""
 	}
@@ -26,21 +26,21 @@ func (stack *ErrorStack) Pop() string {
 	return result
 }
 
-func (stack *ErrorStack) HasElements() bool {
+func (stack *errorStack) hasElements() bool {
 	if stack == nil {
 		return false
 	}
 	return len(stack.lines) > 0
 }
 
-func Stack(err error) *ErrorStack {
-	stack := NewErrorStack()
+func stack(err error) *errorStack {
+	stack := newErrorStack()
 	cause := Cause(err)
 	for err != cause && err != nil {
 		line := fmt.Sprintf("%s: %s", Location(err), Message(err))
-		stack.Push(line)
+		stack.push(line)
 		err = Previous(err)
 	}
-	stack.Push(Message(err))
+	stack.push(Message(err))
 	return stack
 }
