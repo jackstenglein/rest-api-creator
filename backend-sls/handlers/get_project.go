@@ -8,9 +8,9 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/rest_api_creator/backend-sls/actions"
-	"github.com/rest_api_creator/backend-sls/dao"
-	apierrors "github.com/rest_api_creator/backend-sls/errors"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/actions"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
+	apierrors "github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 )
 
 type JsonGetProjectResponse struct {

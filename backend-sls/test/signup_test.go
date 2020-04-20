@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
-	"github.com/rest_api_creator/backend-sls/actions"
-	apierrors "github.com/rest_api_creator/backend-sls/errors"
-	"github.com/rest_api_creator/backend-sls/mock"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/actions"
+	apierrors "github.com/jackstenglein/rest_api_creator/backend-sls/errors"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/mock"
 )
 
 var signupTests = []struct {

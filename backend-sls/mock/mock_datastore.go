@@ -6,7 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	dao "github.com/rest_api_creator/backend-sls/dao"
+	dao "github.com/jackstenglein/rest_api_creator/backend-sls/dao"
 	reflect "reflect"
 )
 

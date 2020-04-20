@@ -8,7 +8,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/rest_api_creator/backend-sls/dao"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
 )
 
 const key = "TODO:changeThisKey"

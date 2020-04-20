@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/rest_api_creator/backend-sls/authentication"
-	"github.com/rest_api_creator/backend-sls/dao"
-	apierrors "github.com/rest_api_creator/backend-sls/errors"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/authentication"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
+	apierrors "github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 

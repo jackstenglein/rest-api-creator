@@ -96,7 +96,7 @@ func TestErrorFunctions(t *testing.T) {
 			wantUserStatus:  500,
 			wantCause:       baseErr,
 			wantMessage:     "Additional context",
-			wantLocation:    "github.com/rest_api_creator/backend-sls/errors/errors_test.go(94)",
+			wantLocation:    "github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(94)",
 			wantPrevious:    baseErr,
 		},
 		{
@@ -107,7 +107,7 @@ func TestErrorFunctions(t *testing.T) {
 			wantUserStatus:  400,
 			wantCause:       userErr,
 			wantMessage:     "Invalid input",
-			wantLocation:    "github.com/rest_api_creator/backend-sls/errors/errors_test.go(9)",
+			wantLocation:    "github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(9)",
 		},
 		{
 			name:            "DoubleWrappedUserError",
@@ -117,7 +117,7 @@ func TestErrorFunctions(t *testing.T) {
 			wantUserStatus:  400,
 			wantCause:       userErr,
 			wantMessage:     "Additional context 2",
-			wantLocation:    "github.com/rest_api_creator/backend-sls/errors/errors_test.go(114)",
+			wantLocation:    "github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(114)",
 			wantPrevious:    wrapErr,
 		},
 	} {
@@ -176,9 +176,9 @@ func TestErrorStack(t *testing.T) {
 
 		wantLines := []string{
 			baseErr.Error(),
-			"github.com/rest_api_creator/backend-sls/errors/errors_test.go(168): Message err 1",
-			"github.com/rest_api_creator/backend-sls/errors/errors_test.go(169): Message err 2",
-			"github.com/rest_api_creator/backend-sls/errors/errors_test.go(170): Message err 3",
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(168): Message err 1",
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(169): Message err 2",
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(170): Message err 3",
 		}
 		for _, wantLine := range wantLines {
 			gotLine := stack.pop()
@@ -188,9 +188,9 @@ func TestErrorStack(t *testing.T) {
 		}
 
 		wantTrace := baseErr.Error() + "\r\t" +
-			"github.com/rest_api_creator/backend-sls/errors/errors_test.go(168): Message err 1\r\t" +
-			"github.com/rest_api_creator/backend-sls/errors/errors_test.go(169): Message err 2\r\t" +
-			"github.com/rest_api_creator/backend-sls/errors/errors_test.go(170): Message err 3\r\t"
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(168): Message err 1\r\t" +
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(169): Message err 2\r\t" +
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(170): Message err 3\r\t"
 		if gotTrace := StackTrace(err3); gotTrace != wantTrace {
 			t.Errorf("Got trace:\n%v\nWant trace:\n%v\n", gotTrace, wantTrace)
 		}

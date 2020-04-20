@@ -1,4 +1,4 @@
-module github.com/rest_api_creator/backend-sls
+module github.com/jackstenglein/rest_api_creator/backend-sls
 
 require (
 	github.com/aws/aws-lambda-go v1.6.0

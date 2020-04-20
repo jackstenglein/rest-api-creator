@@ -12,8 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	gomock "github.com/golang/mock/gomock"
-	"github.com/rest_api_creator/backend-sls/dao"
-	"github.com/rest_api_creator/backend-sls/mock"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/mock"
 )
 
 const email = "test@example.com"

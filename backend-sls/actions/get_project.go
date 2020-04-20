@@ -1,10 +1,10 @@
 package actions
 
 import (
+	"github.com/jackstenglein/rest_api_creator/backend-sls/authentication"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
+	apierrors "github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 	"github.com/pkg/errors"
-	"github.com/rest_api_creator/backend-sls/authentication"
-	"github.com/rest_api_creator/backend-sls/dao"
-	apierrors "github.com/rest_api_creator/backend-sls/errors"
 )
 
 type GetProjectRequest struct {

@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/pkg/errors"
-	apierrors "github.com/rest_api_creator/backend-sls/errors"
+	apierrors "github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 )
 
 type DynamoService interface {

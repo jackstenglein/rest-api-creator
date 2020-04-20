@@ -7,8 +7,8 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/pkg/errors"
-	"github.com/rest_api_creator/backend-sls/actions"
-	apierrors "github.com/rest_api_creator/backend-sls/errors"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/actions"
+	apierrors "github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 )
 
 type JsonLoginResponse struct {

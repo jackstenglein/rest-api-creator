@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rest_api_creator/backend-sls/dao"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
 
 	gomock "github.com/golang/mock/gomock"
-	"github.com/rest_api_creator/backend-sls/actions"
-	"github.com/rest_api_creator/backend-sls/mock"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/actions"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/mock"
 )
 
 var getProjectActionTests = []struct {
