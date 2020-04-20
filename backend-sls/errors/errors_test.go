@@ -6,7 +6,8 @@ import (
 )
 
 var baseErr = origerr.New("Base error")
-var userErr = NewUserError("Invalid input")
+var userErr = NewClient("Invalid input")
+var serverErr = NewServer("Server error")
 var wrapErr = Wrap(userErr, "Additional context 1")
 
 func TestErrType(t *testing.T) {
@@ -96,11 +97,11 @@ func TestErrorFunctions(t *testing.T) {
 			wantUserStatus:  500,
 			wantCause:       baseErr,
 			wantMessage:     "Additional context",
-			wantLocation:    "github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(94)",
+			wantLocation:    "github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(95)",
 			wantPrevious:    baseErr,
 		},
 		{
-			name:            "UserError",
+			name:            "ClientError",
 			err:             userErr,
 			wantUserError:   userErr,
 			wantUserMessage: "Invalid input",
@@ -110,14 +111,23 @@ func TestErrorFunctions(t *testing.T) {
 			wantLocation:    "github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(9)",
 		},
 		{
-			name:            "DoubleWrappedUserError",
+			name:            "ServerError",
+			err:             serverErr,
+			wantUserMessage: "Server error",
+			wantUserStatus:  500,
+			wantCause:       serverErr,
+			wantMessage:     "Server error",
+			wantLocation:    "github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(10)",
+		},
+		{
+			name:            "DoubleWrappedClientError",
 			err:             Wrap(wrapErr, "Additional context 2"),
 			wantUserError:   userErr,
 			wantUserMessage: "Invalid input",
 			wantUserStatus:  400,
 			wantCause:       userErr,
 			wantMessage:     "Additional context 2",
-			wantLocation:    "github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(114)",
+			wantLocation:    "github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(124)",
 			wantPrevious:    wrapErr,
 		},
 	} {
@@ -148,6 +158,23 @@ func TestErrorFunctions(t *testing.T) {
 			t.Errorf("Wrap returned %v; want nil", result)
 		}
 	})
+
+	t.Run("Equals", func(t *testing.T) {
+		if !Equal(nil, nil) {
+			t.Errorf("Nil errors are not equal")
+		}
+
+		err1 := Wrap(Wrap(NewServer("Base error"), "Additional context 1"), "Additional context 2")
+		err2 := Wrap(Wrap(baseErr, "Additional context 1"), "Additional context 2")
+		if !Equal(err1, err2) {
+			t.Errorf("Equal returned false for errors with the same annotation stack")
+		}
+
+		err3 := Wrap(baseErr, "Additional context 2")
+		if Equal(err1, err3) {
+			t.Errorf("Equal returned true for errors with different annotation stacks")
+		}
+	})
 }
 
 func TestErrorStack(t *testing.T) {
@@ -176,9 +203,9 @@ func TestErrorStack(t *testing.T) {
 
 		wantLines := []string{
 			baseErr.Error(),
-			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(168): Message err 1",
-			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(169): Message err 2",
-			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(170): Message err 3",
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(195): Message err 1",
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(196): Message err 2",
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(197): Message err 3",
 		}
 		for _, wantLine := range wantLines {
 			gotLine := stack.pop()
@@ -188,9 +215,9 @@ func TestErrorStack(t *testing.T) {
 		}
 
 		wantTrace := baseErr.Error() + "\r\t" +
-			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(168): Message err 1\r\t" +
-			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(169): Message err 2\r\t" +
-			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(170): Message err 3\r\t"
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(195): Message err 1\r\t" +
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(196): Message err 2\r\t" +
+			"github.com/jackstenglein/rest_api_creator/backend-sls/errors/errors_test.go(197): Message err 3\r\t"
 		if gotTrace := StackTrace(err3); gotTrace != wantTrace {
 			t.Errorf("Got trace:\n%v\nWant trace:\n%v\n", gotTrace, wantTrace)
 		}
