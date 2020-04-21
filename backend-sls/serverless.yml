@@ -15,6 +15,8 @@ service: backend-sls
 # app and org for use with dashboard.serverless.com
 #app: your-app-name
 #org: your-org-name
+plugins:
+  - serverless-go-build
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -63,26 +65,27 @@ provider:
 #    variable1: value1
 
 package:
-  exclude:
-    - ./**
-  include:
-    - ./bin/**
+  individually: true
+  # exclude:
+  #   - ./**
+  # include:
+  #   - ./bin/**
 
 functions:
-  signup:
-    handler: bin/signup
-    events:
-      - http:
-          path: signup
-          method: post
-  login:
-    handler: bin/login
-    events:
-      - http:
-          path: login
-          method: put
+  # signup:
+  #   handler: handlers/signup.go
+  #   events:
+  #     - http:
+  #         path: signup
+  #         method: post
+  # login:
+  #   handler: handlers/login.go
+  #   events:
+  #     - http:
+  #         path: login
+  #         method: put
   getProject:
-    handler: bin/get_project
+    handler: getproject.HandleRequest
     events:
       - http:
           path: projects/{id}

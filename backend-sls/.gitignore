@@ -7,6 +7,9 @@ bin
 # golang vendor (dependencies) directory
 vendor
 
+# Generated entrypoints for individually-packaged binaries
+generatedEntrypoints
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
