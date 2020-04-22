@@ -72,12 +72,12 @@ package:
   #   - ./bin/**
 
 functions:
-  # signup:
-  #   handler: handlers/signup.go
-  #   events:
-  #     - http:
-  #         path: signup
-  #         method: post
+  signup:
+    handler: signup.HandleRequest
+    events:
+      - http:
+          path: signup
+          method: post
   # login:
   #   handler: handlers/login.go
   #   events:
