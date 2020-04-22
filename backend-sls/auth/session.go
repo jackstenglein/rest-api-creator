@@ -15,8 +15,8 @@ import (
 // TODO: dynamically pull this key from AWS KMS
 const key = "TODO:changeThisKey"
 
-// userGetter wraps the GetUser function for database dependency injection when verifying cookies.
-type userGetter interface {
+// UserGetter wraps the GetUser function for database dependency injection when verifying cookies.
+type UserGetter interface {
 	GetUser(string) (*dao.User, error)
 }
 
@@ -63,7 +63,7 @@ func GenerateCookie(email string, token string) (cookie string, err error) {
 // an error is returned and email is the empty string.
 //
 // db must implement the GetUser(string) (*dao.User, error) method
-func VerifyCookie(cookie string, db userGetter) (email string, err error) {
+func VerifyCookie(cookie string, db UserGetter) (email string, err error) {
 	email, token, mac, err := splitCookie(cookie)
 	if err != nil {
 		return "", errors.NewClient("Not authenticated")

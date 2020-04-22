@@ -80,7 +80,12 @@ func TestAllMethods(t *testing.T) {
 
 func TestInvalidCookie(t *testing.T) {
 	t.Run("IncorrectFormat", func(t *testing.T) {
-		_, _, _, err := splitCookie("#token#mac")
+		_, _, _, err := splitCookie("")
+		if err == nil {
+			t.Errorf("Empty string cookie considered valid")
+		}
+
+		_, _, _, err = splitCookie("#token#mac")
 		if err == nil {
 			t.Errorf("Cookie `#token#mac` considered valid")
 		}

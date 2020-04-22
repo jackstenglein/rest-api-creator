@@ -9,7 +9,7 @@ import (
 // getProjectDatabase wraps the database methods required to perform the getProject
 // action. This interface is used to perform dependency injection in unit tests.
 type getProjectDatabase interface {
-	GetUser(string) (*dao.User, error)
+	auth.UserGetter
 	GetProject(string, string) (*dao.Project, error)
 }
 
