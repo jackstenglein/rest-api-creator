@@ -1,23 +1,19 @@
-package signup
+package portal
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
-	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
+// signupDatabase wraps the database methods required to perform the signup action.
 type signupDatabase interface {
 	CreateUser(string, string, string) error
 }
 
-var generateToken = auth.GenerateToken
-var generateCookie = auth.GenerateCookie
-var db signupDatabase = dao.Dynamo
-
+// validateEmail returns true if the email is valid and false otherwise.
 func validateEmail(email string) bool {
 	if len(email) == 0 || !strings.Contains(email, "@") || !strings.Contains(email, ".") {
 		return false
@@ -25,6 +21,8 @@ func validateEmail(email string) bool {
 	return true
 }
 
+// validatePassword checks that the user's password is valid. If it is not valid, it returns
+// an error containing the reason. Otherwise, it returns nil.
 func validatePassword(password string) error {
 	if len(password) < 8 {
 		return errors.NewClient("Password is too short")
@@ -32,7 +30,11 @@ func validatePassword(password string) error {
 	return nil
 }
 
-func signup(email string, password string) (string, error) {
+// signup performs the actual actions required to create a new user. signup hashes the user's password, generates
+// an auth token and cookie, and stores the new user in the database. If there are no errors, signup returns the
+// generated cookie. Otherwise, signup returns the empty string and the error. If a user with the given email
+// already exists in the database, an error is returned.
+func signup(email string, password string, generateToken generateTokenFunc, generateCookie generateCookieFunc, db signupDatabase) (string, error) {
 	ok := validateEmail(email)
 	if !ok {
 		return "", errors.NewClient(fmt.Sprintf("Invalid email: '%s'", email))

@@ -1,38 +1,32 @@
-package signup
+package portal
 
 import (
 	"testing"
 
-	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
-	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 )
 
-type databaseMock struct {
+type signupDBMock struct {
 	email        string
 	plaintextPwd string
 	token        string
 	err          error
 }
 
-func (mock *databaseMock) CreateUser(email string, hashedPwd string, token string) error {
+func (mock *signupDBMock) CreateUser(email string, hashedPwd string, token string) error {
 	if email != mock.email || hashedPwd == mock.plaintextPwd || token != mock.token {
 		return errors.NewServer("Incorrect input to CreateUser mock")
 	}
 	return mock.err
 }
 
-type tokenGenerator func() (string, error)
-
-func generateTokenMock(mockToken string, mockErr error) tokenGenerator {
+func generateTokenMock(mockToken string, mockErr error) generateTokenFunc {
 	return func() (string, error) {
 		return mockToken, mockErr
 	}
 }
 
-type cookieGenerator func(string, string) (string, error)
-
-func generateCookieMock(mockEmail string, mockToken string, mockCookie string, mockErr error) cookieGenerator {
+func generateCookieMock(mockEmail string, mockToken string, mockCookie string, mockErr error) generateCookieFunc {
 	return func(email string, token string) (string, error) {
 		if email != mockEmail || token != mockToken {
 			return "", errors.NewServer("Incorrect input to GenerateCookie mock")
@@ -49,9 +43,9 @@ var signupTests = []struct {
 	password string
 
 	// Mock data
-	tokenFunc  tokenGenerator
-	cookieFunc cookieGenerator
-	mockDB     *databaseMock
+	tokenFunc  generateTokenFunc
+	cookieFunc generateCookieFunc
+	mockDB     *signupDBMock
 
 	// Expected output
 	wantCookie string
@@ -98,7 +92,7 @@ var signupTests = []struct {
 		password:   "12345678",
 		tokenFunc:  generateTokenMock("token", nil),
 		cookieFunc: generateCookieMock("test@example.com", "token", "cookie", nil),
-		mockDB:     &databaseMock{"test@example.com", "12345678", "token", errors.NewClient("Email already exists")},
+		mockDB:     &signupDBMock{"test@example.com", "12345678", "token", errors.NewClient("Email already exists")},
 		wantErr:    errors.Wrap(errors.NewClient("Email already exists"), "Failed to create user"),
 	},
 	{
@@ -107,7 +101,7 @@ var signupTests = []struct {
 		password:   "12345678",
 		tokenFunc:  generateTokenMock("token", nil),
 		cookieFunc: generateCookieMock("test@example.com", "token", "cookie", nil),
-		mockDB:     &databaseMock{"test@example.com", "12345678", "token", nil},
+		mockDB:     &signupDBMock{"test@example.com", "12345678", "token", nil},
 		wantCookie: "cookie",
 	},
 }
@@ -115,18 +109,8 @@ var signupTests = []struct {
 func TestSignup(t *testing.T) {
 	for _, test := range signupTests {
 		t.Run(test.name, func(t *testing.T) {
-			// Setup
-			generateToken = test.tokenFunc
-			generateCookie = test.cookieFunc
-			db = test.mockDB
-			defer func() {
-				generateToken = auth.GenerateToken
-				generateCookie = auth.GenerateCookie
-				db = dao.Dynamo
-			}()
-
 			// Execute
-			cookie, err := signup(test.email, test.password)
+			cookie, err := signup(test.email, test.password, test.tokenFunc, test.cookieFunc, test.mockDB)
 
 			// Verify
 			if cookie != test.wantCookie {

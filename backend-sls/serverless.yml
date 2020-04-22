@@ -73,17 +73,17 @@ package:
 
 functions:
   signup:
-    handler: signup.HandleRequest
+    handler: portal.HandleSignupRequest
     events:
       - http:
           path: signup
           method: post
-  # login:
-  #   handler: handlers/login.go
-  #   events:
-  #     - http:
-  #         path: login
-  #         method: put
+  login:
+    handler: portal.HandleLoginRequest
+    events:
+      - http:
+          path: login
+          method: put
   getProject:
     handler: getproject.HandleRequest
     events:

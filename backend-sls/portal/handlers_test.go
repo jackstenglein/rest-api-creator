@@ -1,4 +1,4 @@
-package signup
+package portal
 
 import (
 	"encoding/json"
@@ -10,9 +10,9 @@ import (
 	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 )
 
-type signupFunction func(string, string) (string, error)
+type handlerFunc func(events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 
-func signupMock(email string, password string, cookie string, err error) signupFunction {
+func portalFuncMock(email string, password string, cookie string, err error) portalFunc {
 	return func(gotEmail string, gotPassword string) (string, error) {
 		if gotEmail != email || gotPassword != password {
 			return "", errors.NewServer("Incorrect input to signup mock")
@@ -22,16 +22,30 @@ func signupMock(email string, password string, cookie string, err error) signupF
 }
 
 func handlerRequest(email string, password string) events.APIGatewayProxyRequest {
-	json, _ := json.Marshal(&signupRequest{Email: email, Password: password})
+	json, _ := json.Marshal(&portalRequest{Email: email, Password: password})
 	return events.APIGatewayProxyRequest{Body: string(json)}
 }
 
 func handlerResponse(cookie string, err string, status int) events.APIGatewayProxyResponse {
-	json, _ := json.Marshal(&signupResponse{Error: err})
+	json, _ := json.Marshal(&portalResponse{Error: err})
 	var headers = map[string]string{
 		"Set-Cookie": fmt.Sprintf("session=%s;HttpOnly;SameSite=strict;Secure", cookie),
 	}
 	return events.APIGatewayProxyResponse{Headers: headers, Body: string(json), StatusCode: status}
+}
+
+var portalHandlers = []struct {
+	name     string
+	function handlerFunc
+}{
+	{
+		name:     "Signup",
+		function: HandleSignupRequest,
+	},
+	{
+		name:     "Login",
+		function: HandleLoginRequest,
+	},
 }
 
 var handlerTests = []struct {
@@ -41,7 +55,7 @@ var handlerTests = []struct {
 	request events.APIGatewayProxyRequest
 
 	// Mock data
-	mockSignup signupFunction
+	mockFunc portalFunc
 
 	// Expected output
 	wantResponse events.APIGatewayProxyResponse
@@ -50,42 +64,46 @@ var handlerTests = []struct {
 	{
 		name:         "ClientError",
 		request:      handlerRequest("test@example.com", "1234567"),
-		mockSignup:   signupMock("test@example.com", "1234567", "", errors.Wrap(errors.NewClient("Password is too short"), "Invalid password")),
+		mockFunc:     portalFuncMock("test@example.com", "1234567", "", errors.Wrap(errors.NewClient("Password is too short"), "Invalid password")),
 		wantResponse: handlerResponse("", "Password is too short", 400),
 	},
 	{
 		name:         "ServerError",
 		request:      handlerRequest("test@example.com", "1234567"),
-		mockSignup:   signupMock("test@example.com", "1234567", "", errors.Wrap(errors.NewServer("Random error"), "Failed to create user")),
+		mockFunc:     portalFuncMock("test@example.com", "1234567", "", errors.Wrap(errors.NewServer("Random error"), "Failed to create user")),
 		wantResponse: handlerResponse("", "Failed to create user", 500),
 	},
 	{
 		name:         "SuccessfulInvocation",
 		request:      handlerRequest("test@example.com", "1234567"),
-		mockSignup:   signupMock("test@example.com", "1234567", "cookievalue", nil),
+		mockFunc:     portalFuncMock("test@example.com", "1234567", "cookievalue", nil),
 		wantResponse: handlerResponse("cookievalue", "", 200),
 	},
 }
 
 func TestHandleRequest(t *testing.T) {
 	for _, test := range handlerTests {
-		t.Run(test.name, func(t *testing.T) {
-			// Setup
-			signupFunc = test.mockSignup
-			defer func() {
-				signupFunc = signup
-			}()
+		for _, handler := range portalHandlers {
+			t.Run(fmt.Sprintf("%s/%s", test.name, handler.name), func(t *testing.T) {
+				// Setup
+				signupFunc = test.mockFunc
+				loginFunc = test.mockFunc
+				defer func() {
+					signupFunc = handleSignup
+					loginFunc = handleLogin
+				}()
 
-			// Execute
-			response, err := HandleRequest(test.request)
+				// Execute
+				response, err := handler.function(test.request)
 
-			// Verify
-			if !reflect.DeepEqual(response, test.wantResponse) {
-				t.Errorf("Got response %v; want %v", response, test.wantResponse)
-			}
-			if !errors.Equal(err, test.wantErr) {
-				t.Errorf("Got error %v; want %v", err, test.wantErr)
-			}
-		})
+				// Verify
+				if !reflect.DeepEqual(response, test.wantResponse) {
+					t.Errorf("Got response %v; want %v", response, test.wantResponse)
+				}
+				if !errors.Equal(err, test.wantErr) {
+					t.Errorf("Got error %v; want %v", err, test.wantErr)
+				}
+			})
+		}
 	}
 }
