@@ -72,18 +72,6 @@ package:
   #   - ./bin/**
 
 functions:
-  signup:
-    handler: portal.HandleSignupRequest
-    events:
-      - http:
-          path: signup
-          method: post
-  login:
-    handler: portal.HandleLoginRequest
-    events:
-      - http:
-          path: login
-          method: put
   getProject:
     handler: getproject.HandleRequest
     events:
@@ -94,6 +82,25 @@ functions:
             parameters:
               paths:
                 id: true
+  login:
+    handler: portal.HandleLoginRequest
+    events:
+      - http:
+          path: login
+          method: put
+  logout:
+    handler: logout.HandleLogout
+    events:
+      - http:
+          path: logout
+          method: put
+  signup:
+    handler: portal.HandleSignupRequest
+    events:
+      - http:
+          path: signup
+          method: post
+  
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
