@@ -76,7 +76,7 @@ functions:
     handler: getproject.HandleRequest
     events:
       - http:
-          path: projects/{id}
+          path: projects/{pid}
           method: get
           request:
             parameters:

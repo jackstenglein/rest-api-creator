@@ -23,7 +23,7 @@ func getProjectMock(wantProjectID string, wantCookie string, output *dao.Project
 
 func handlerRequest(projectID string, cookie string) events.APIGatewayProxyRequest {
 	parameters := map[string]string{
-		"id": projectID,
+		"pid": projectID,
 	}
 	headers := map[string]string{
 		"Cookie": cookie,

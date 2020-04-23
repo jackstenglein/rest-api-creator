@@ -1,3 +1,4 @@
+// Package portal handles requests to the POST /signup and PUT /login REST API endpoints.
 package portal
 
 import (

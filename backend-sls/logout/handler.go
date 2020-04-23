@@ -1,3 +1,4 @@
+// Package logout handles requests to the PUT /logout REST API endpoint.
 package logout
 
 import (

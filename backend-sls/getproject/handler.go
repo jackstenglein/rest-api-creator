@@ -1,4 +1,4 @@
-// Package getproject handles requests to the GET /project/{id} API endpoint.
+// Package getproject handles requests to the GET /projects/{pid} API endpoint.
 package getproject
 
 import (
@@ -26,7 +26,7 @@ var actionFunc = getProject
 // non-nil error only if JSON marshaling of the response body fails.
 func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// Get request parameters
-	projectID := request.PathParameters["id"]
+	projectID := request.PathParameters["pid"]
 	cookie := auth.ExtractCookie(request.Headers["Cookie"])
 
 	// Perform the action
