@@ -4,9 +4,9 @@ package getproject
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 )
@@ -27,14 +27,7 @@ var actionFunc = getProject
 func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// Get request parameters
 	projectID := request.PathParameters["id"]
-	cookie := request.Headers["Cookie"]
-	startIndex := strings.Index(cookie, "session=")
-	stopIndex := strings.Index(cookie, ";HttpOnly")
-	if startIndex < 0 || stopIndex < startIndex {
-		cookie = ""
-	} else {
-		cookie = cookie[startIndex+len("session=") : stopIndex]
-	}
+	cookie := auth.ExtractCookie(request.Headers["Cookie"])
 
 	// Perform the action
 	project, err := actionFunc(projectID, cookie)

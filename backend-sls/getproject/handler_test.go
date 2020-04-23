@@ -53,31 +53,18 @@ var handlerTests = []struct {
 	wantErr      error
 }{
 	{
-		name:          "InvalidCookie",
-		request:       handlerRequest("default", ";HttpOnly;session=asdfasdfasdf"),
+		name:          "GetProjectError",
+		request:       handlerRequest("default", "session=cookie;HttpOnly;SameSite=strict;Secure"),
 		mockProjectID: "default",
-		mockErr:       errors.NewClient("Not authenticated"),
-		wantResponse:  handlerResponse(nil, "Not authenticated", 400),
-	},
-	{
-		name:          "InvalidCookie2",
-		request:       handlerRequest("default", "session=;HttpOnly;"),
-		mockProjectID: "default",
-		mockErr:       errors.NewClient("Not authenticated"),
-		wantResponse:  handlerResponse(nil, "Not authenticated", 400),
-	},
-	{
-		name:          "InvalidCookie3",
-		request:       handlerRequest("default", ";HttpOnly;"),
-		mockProjectID: "default",
-		mockErr:       errors.NewClient("Not authenticated"),
-		wantResponse:  handlerResponse(nil, "Not authenticated", 400),
+		mockCookie:    "cookie",
+		mockErr:       errors.NewServer("Failed to get project"),
+		wantResponse:  handlerResponse(nil, "Failed to get project", 500),
 	},
 	{
 		name:          "SucccessfulInvocation",
-		request:       handlerRequest("default", "session=asdfjklqwerty;HttpOnly;"),
+		request:       handlerRequest("default", "session=cookie;HttpOnly;SameSite=strict;Secure"),
 		mockProjectID: "default",
-		mockCookie:    "asdfjklqwerty",
+		mockCookie:    "cookie",
 		mockProject:   &dao.Project{ID: "default", Name: "ProjectName"},
 		wantResponse:  handlerResponse(&dao.Project{ID: "default", Name: "ProjectName"}, "", 200),
 	},
