@@ -78,6 +78,49 @@ func TestAllMethods(t *testing.T) {
 	}
 }
 
+var extractCookieTests = []struct {
+	name       string
+	header     string
+	wantCookie string
+}{
+	{
+		name:       "MissingSession",
+		header:     "cookievalue;HttpOnly;SameSite=strict;Secure",
+		wantCookie: "",
+	},
+	{
+		name:       "MissingFlags",
+		header:     "session=cookievalue",
+		wantCookie: "",
+	},
+	{
+		name:       "FlagsBeforeSession",
+		header:     ";HttpOnly;SameSite=strict;Secure;session=cookievalue",
+		wantCookie: "",
+	},
+	{
+		name:       "NoSessionValue",
+		header:     "session=;HttpOnly;SameSite=strict;Secure",
+		wantCookie: "",
+	},
+	{
+		name:       "CorrectHeader",
+		header:     "session=cookievalue;HttpOnly;SameSite=strict;Secure",
+		wantCookie: "cookievalue",
+	},
+}
+
+func TestExtractCookie(t *testing.T) {
+	for _, test := range extractCookieTests {
+		t.Run(test.name, func(t *testing.T) {
+			cookie := ExtractCookie(test.header)
+			if cookie != test.wantCookie {
+				t.Errorf("Got cookie '%s'; want '%s'", cookie, test.wantCookie)
+			}
+		})
+	}
+}
+
 func TestInvalidCookie(t *testing.T) {
 	t.Run("IncorrectFormat", func(t *testing.T) {
 		_, _, _, err := splitCookie("")

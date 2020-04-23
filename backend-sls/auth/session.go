@@ -57,6 +57,19 @@ func GenerateCookie(email string, token string) (cookie string, err error) {
 	return macString + "#" + hex.EncodeToString(macBytes), nil
 }
 
+// ExtractCookie extracts the actual session cookie value from a `Cookie` header value. The header
+// must be in the following format:
+//		session=<cookie value>;HttpOnly;SameSite=struct;Secure
+// If the header value is not in the correct format, the empty string will be returned.
+func ExtractCookie(cookieHeader string) string {
+	startIndex := strings.Index(cookieHeader, "session=")
+	stopIndex := strings.Index(cookieHeader, ";HttpOnly;SameSite=strict;Secure")
+	if startIndex != 0 || stopIndex < len("session=") {
+		return ""
+	}
+	return cookieHeader[len("session="):stopIndex]
+}
+
 // VerifyCookie checks that cookie is in the correct format, its mac is correct, and its
 // contained (email, token) tuple matches the (email, token) tuple stored in db. VerifyCookie
 // returns the email contained in the cookie if the cookie is valid. If the cookie is invalid,
