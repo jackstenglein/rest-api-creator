@@ -94,6 +94,12 @@ functions:
       - http:
           path: logout
           method: put
+  putObject:
+    handler: putobject.HandlePutObject
+    events:
+      - http:
+          path: projects/{pid}/objects
+          method: put
   signup:
     handler: portal.HandleSignupRequest
     events:
