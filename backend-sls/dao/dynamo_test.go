@@ -353,3 +353,101 @@ func TestUpdateUserToken(t *testing.T) {
 		})
 	}
 }
+
+// -------------- UpdateItem Tests -----------------
+
+var updateTokenInput = &dynamodb.UpdateItemInput{
+	ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+		":item": {
+			S: aws.String("token"),
+		},
+	},
+	Key: map[string]*dynamodb.AttributeValue{
+		"Email": {
+			S: aws.String("test@example.com"),
+		},
+	},
+	TableName:        aws.String(os.Getenv("TABLE_NAME")),
+	UpdateExpression: aws.String("SET path = :item"),
+}
+
+var updateObjectInput = &dynamodb.UpdateItemInput{
+	ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+		":item": {
+			M: map[string]*dynamodb.AttributeValue{
+				"Name": {
+					S: aws.String("Object Name"),
+				},
+				"Description": {
+					S: aws.String("Test description"),
+				},
+				"Id": {
+					S: aws.String("objectId"),
+				},
+			},
+		},
+	},
+	Key: map[string]*dynamodb.AttributeValue{
+		"Email": {
+			S: aws.String("test@example.com"),
+		},
+	},
+	TableName:        aws.String(os.Getenv("TABLE_NAME")),
+	UpdateExpression: aws.String("SET path = :item"),
+}
+
+var updateItemTests = []struct {
+	name string
+
+	// Input
+	item interface{}
+
+	// Mock data
+	mockInput *dynamodb.UpdateItemInput
+	mockErr   error
+
+	// Expected output
+	wantErr error
+}{
+	{
+		name:      "ServiceError",
+		item:      "token",
+		mockInput: updateTokenInput,
+		mockErr:   errors.NewServer("DynamoDB failure"),
+		wantErr:   errors.Wrap(errors.NewServer("DynamoDB failure"), "Failed DynamoDB UpdateItem call"),
+	},
+	{
+		name:      "AuthTokenItem",
+		item:      "token",
+		mockInput: updateTokenInput,
+		mockErr:   nil,
+		wantErr:   nil,
+	},
+	{
+		name:      "ObjectItem",
+		item:      &Object{ID: "objectId", Name: "Object Name", Description: "Test description"},
+		mockInput: updateObjectInput,
+		mockErr:   nil,
+		wantErr:   nil,
+	},
+}
+
+func TestUpdateItem(t *testing.T) {
+	for _, test := range updateItemTests {
+		t.Run(test.name, func(t *testing.T) {
+			// Setup
+			updateSvc = updateItemMock(test.mockInput, nil, test.mockErr)
+			defer func() {
+				updateSvc = defaultSvc
+			}()
+
+			// Execute
+			gotErr := Dynamo.UpdateItem("test@example.com", "path", test.item)
+
+			// Verify
+			if !errors.Equal(gotErr, test.wantErr) {
+				t.Errorf("Got error '%s'; want '%s'", gotErr, test.wantErr)
+			}
+		})
+	}
+}

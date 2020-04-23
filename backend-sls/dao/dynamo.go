@@ -157,3 +157,31 @@ func (dynamo) UpdateUserToken(email string, token string) error {
 	_, err := updateSvc.UpdateItem(input)
 	return errors.Wrap(err, "Failed DynamoDB UpdateItem call")
 }
+
+// UpdateItem updates the property of the user at path with the value of item. If path is not a valid
+// property path for the given user, a client error is returned. If something else goes wrong, a server
+// error is returned.
+//
+// TODO: Return client error if path does not exist
+func (dynamo) UpdateItem(email string, path string, item interface{}) error {
+	expression := fmt.Sprintf("SET %s = :item", path)
+	itemAV, err := dynamodbattribute.Marshal(item)
+	if err != nil {
+		return errors.Wrap(err, "Failed to marashal item")
+	}
+
+	input := &dynamodb.UpdateItemInput{
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":item": itemAV,
+		},
+		Key: map[string]*dynamodb.AttributeValue{
+			"Email": {
+				S: aws.String(email),
+			},
+		},
+		TableName:        aws.String(os.Getenv("TABLE_NAME")),
+		UpdateExpression: aws.String(expression),
+	}
+	_, err = updateSvc.UpdateItem(input)
+	return errors.Wrap(err, "Failed DynamoDB UpdateItem call")
+}
