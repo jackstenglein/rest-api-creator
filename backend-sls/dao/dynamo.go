@@ -75,17 +75,16 @@ func (dynamo) CreateUser(email string, password string, token string) error {
 	return nil
 }
 
-// GetUser returns the User object associated with the given email. If the email
-// does not exist, the returned user will be nil and the returned error will be
-// a new client error.
-func (dynamo) GetUser(email string) (*User, error) {
+func (dynamo) getUser(email string, expression string, attributeNames map[string]*string) (*User, error) {
 	input := &dynamodb.GetItemInput{
+		ExpressionAttributeNames: attributeNames,
 		Key: map[string]*dynamodb.AttributeValue{
 			"Email": {
 				S: aws.String(email),
 			},
 		},
-		TableName: aws.String(os.Getenv("TABLE_NAME")),
+		ProjectionExpression: aws.String(expression),
+		TableName:            aws.String(os.Getenv("TABLE_NAME")),
 	}
 
 	result, err := getSvc.GetItem(input)
@@ -93,7 +92,7 @@ func (dynamo) GetUser(email string) (*User, error) {
 		return nil, errors.Wrap(err, "Failed DynamoDB GetItem call")
 	}
 	if result.Item == nil {
-		return nil, errors.NewClient(fmt.Sprintf("Email `%s` not found", email))
+		return nil, errors.NewClient(fmt.Sprintf("Email '%s' not found", email))
 	}
 
 	user := User{}
@@ -101,79 +100,80 @@ func (dynamo) GetUser(email string) (*User, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to unmarshal GetItem result")
 	}
-
 	return &user, nil
+}
+
+// GetUserInfo returns the basic User info associated with the given email. Projects are not included.
+// If the email does not exist, the returned user will be nil and the returned error will be a new client
+// error.
+func (dynamo) GetUserInfo(email string) (*User, error) {
+	expression := "Email, Password, SessionToken"
+	return Dynamo.getUser(email, expression, nil)
 }
 
 // GetProject returns the Project object associated with the given email and projectID.
 // If the projectID does not exist for the specified email, the returned project will be
 // nil and the returned error will be a new client error.
 func (dynamo) GetProject(email string, projectID string) (*Project, error) {
-	input := &dynamodb.GetItemInput{
-		Key: map[string]*dynamodb.AttributeValue{
-			"Email": {
-				S: aws.String(email),
-			},
-		},
-		ProjectionExpression: aws.String(fmt.Sprintf("Projects.%s", projectID)),
-		TableName:            aws.String(os.Getenv("TABLE_NAME")),
-	}
-	result, err := getSvc.GetItem(input)
-	if err != nil {
-		return nil, errors.Wrap(err, "Failed DynamoDB GetItem call")
+	expression := "Projects.#pid"
+	attributeNames := map[string]*string{
+		"#pid": aws.String(projectID),
 	}
 
-	if result.Item == nil {
-		return nil, errors.NewClient(fmt.Sprintf("Project `%s` not found", projectID))
+	user, err := Dynamo.getUser(email, expression, attributeNames)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Failed to get user with email '%s'", email))
 	}
 
-	project := Project{}
-	err = dynamodbattribute.UnmarshalMap(result.Item, &project)
-	if err != nil {
-		return nil, errors.Wrap(err, "Failed to unmarshal GetItem result")
+	project := user.Projects[projectID]
+	if project == nil {
+		return nil, errors.NewClient(fmt.Sprintf("Project '%s' not found", projectID))
 	}
-	return &project, nil
+	return project, nil
 }
 
 // UpdateUserToken sets the auth token on the User object associated with the given email
 // in the database.
 // TODO: Check that this doesn't create a new user obejct if email doesn't exist in DB.
-func (dynamo) UpdateUserToken(email string, token string) error {
-	input := &dynamodb.UpdateItemInput{
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":t": {
-				S: aws.String(token),
-			},
-		},
-		Key: map[string]*dynamodb.AttributeValue{
-			"Email": {
-				S: aws.String(email),
-			},
-		},
-		TableName:        aws.String(os.Getenv("TABLE_NAME")),
-		UpdateExpression: aws.String("SET SessionToken=:t"),
-	}
+// func (dynamo) UpdateUserToken(email string, token string) error {
+// 	input := &dynamodb.UpdateItemInput{
+// 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+// 			":t": {
+// 				S: aws.String(token),
+// 			},
+// 		},
+// 		Key: map[string]*dynamodb.AttributeValue{
+// 			"Email": {
+// 				S: aws.String(email),
+// 			},
+// 		},
+// 		TableName:        aws.String(os.Getenv("TABLE_NAME")),
+// 		UpdateExpression: aws.String("SET SessionToken=:t"),
+// 	}
 
-	_, err := updateSvc.UpdateItem(input)
-	return errors.Wrap(err, "Failed DynamoDB UpdateItem call")
-}
+// 	_, err := updateSvc.UpdateItem(input)
+// 	return errors.Wrap(err, "Failed DynamoDB UpdateItem call")
+// }
 
-// UpdateItem updates the property of the user at path with the value of item. If path is not a valid
+// updateUser updates the properties of the user given in expression with the given items. If expression is not a valid
 // property path for the given user, a client error is returned. If something else goes wrong, a server
 // error is returned.
 //
 // TODO: Return client error if path does not exist
-func (dynamo) UpdateItem(email string, path string, item interface{}) error {
-	expression := fmt.Sprintf("SET %s = :item", path)
-	itemAV, err := dynamodbattribute.Marshal(item)
-	if err != nil {
-		return errors.Wrap(err, "Failed to marashal item")
+func (dynamo) updateUser(email string, expression string, attributeNames map[string]*string, items map[string]interface{}) error {
+
+	expressionAttributeValues := make(map[string]*dynamodb.AttributeValue)
+	for key, item := range items {
+		itemAV, err := dynamodbattribute.Marshal(item)
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("Failed to marshal item %s", key))
+		}
+		expressionAttributeValues[key] = itemAV
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":item": itemAV,
-		},
+		ExpressionAttributeNames:  attributeNames,
+		ExpressionAttributeValues: expressionAttributeValues,
 		Key: map[string]*dynamodb.AttributeValue{
 			"Email": {
 				S: aws.String(email),
@@ -182,6 +182,31 @@ func (dynamo) UpdateItem(email string, path string, item interface{}) error {
 		TableName:        aws.String(os.Getenv("TABLE_NAME")),
 		UpdateExpression: aws.String(expression),
 	}
-	_, err = updateSvc.UpdateItem(input)
+
+	// fmt.Println("DynamoDB input:", input)
+
+	_, err := updateSvc.UpdateItem(input)
 	return errors.Wrap(err, "Failed DynamoDB UpdateItem call")
+}
+
+func (dynamo) UpdateObject(email string, projectID string, object *Object) error {
+	expression := "SET Projects.#pid.Objects.#oid = :obj"
+	attributeNames := map[string]*string{
+		"#pid": aws.String(projectID),
+		"#oid": aws.String(object.ID),
+	}
+	items := map[string]interface{}{
+		":obj": object,
+	}
+	return Dynamo.updateUser(email, expression, attributeNames, items)
+}
+
+// UpdateUserToken sets the auth token on the User object associated with the given email
+// in the database.
+func (dynamo) UpdateUserToken(email string, token string) error {
+	expression := "SET SessionToken = :tok"
+	items := map[string]interface{}{
+		":tok": token,
+	}
+	return Dynamo.updateUser(email, expression, nil, items)
 }

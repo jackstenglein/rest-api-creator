@@ -1,7 +1,6 @@
 package putobject
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -21,19 +20,19 @@ func verifyCookieMock(mockCookie string, mockDB auth.UserGetter, mockEmail strin
 }
 
 type databaseMock struct {
-	email  string
-	path   string
-	object *dao.Object
-	err    error
+	email     string
+	projectID string
+	object    *dao.Object
+	err       error
 }
 
-func (mock *databaseMock) GetUser(email string) (*dao.User, error) {
+func (mock *databaseMock) GetUserInfo(email string) (*dao.User, error) {
 	return nil, nil
 }
 
-func (mock *databaseMock) UpdateItem(email string, path string, item interface{}) error {
-	if email != mock.email || path != mock.path || !reflect.DeepEqual(item, mock.object) {
-		return errors.NewServer(fmt.Sprintf("Incorrect input to UpdateItem mock; got %v; want %v", item, mock.object))
+func (mock *databaseMock) UpdateObject(email string, projectID string, object *dao.Object) error {
+	if email != mock.email || projectID != mock.projectID || !reflect.DeepEqual(object, mock.object) {
+		return errors.NewServer("Incorrect input to UpdateObject mock")
 	}
 	return mock.err
 }
@@ -109,7 +108,7 @@ var putObjectTests = []struct {
 		cookie:    "cookie",
 		projectID: "projectId",
 		object:    &dao.Object{ID: "id", Name: "name", Description: "desc"},
-		db:        &databaseMock{"test@example.com", "Projects.projectId.Objects.id", &dao.Object{ID: "id", Name: "name", Description: "desc"}, errors.NewServer("DDB failure")},
+		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "id", Name: "name", Description: "desc"}, errors.NewServer("DDB failure")},
 		email:     "test@example.com",
 		wantErr:   errors.Wrap(errors.NewServer("DDB failure"), "Failed database call to put object"),
 	},
@@ -118,7 +117,7 @@ var putObjectTests = []struct {
 		cookie:    "cookie",
 		projectID: "projectId",
 		object:    &dao.Object{ID: "id", Name: "name", Description: "desc"},
-		db:        &databaseMock{"test@example.com", "Projects.projectId.Objects.id", &dao.Object{ID: "id", Name: "name", Description: "desc"}, nil},
+		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "id", Name: "name", Description: "desc"}, nil},
 		email:     "test@example.com",
 	},
 	{
@@ -127,7 +126,7 @@ var putObjectTests = []struct {
 		projectID: "projectId",
 		object:    &dao.Object{Name: "name", Description: "desc"},
 		uuidFunc:  newUUIDMock(nil),
-		db:        &databaseMock{"test@example.com", fmt.Sprintf("Projects.projectId.Objects.%s", mockUUIDString), &dao.Object{ID: mockUUIDString, Name: "name", Description: "desc"}, nil},
+		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: mockUUIDString, Name: "name", Description: "desc"}, nil},
 		email:     "test@example.com",
 	},
 }

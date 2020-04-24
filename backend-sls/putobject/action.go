@@ -1,8 +1,6 @@
 package putobject
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
@@ -17,7 +15,7 @@ type verifyCookieFunc func(string, auth.UserGetter) (string, error)
 // This allows for dependency injection of the database.
 type putObjectDatabase interface {
 	auth.UserGetter
-	UpdateItem(string, string, interface{}) error
+	UpdateObject(string, string, *dao.Object) error
 }
 
 // uuidFunc wraps the function type used to create UUIDs.
@@ -51,7 +49,6 @@ func putObject(cookie string, projectID string, object *dao.Object, verifyCookie
 		return errors.NewClient("Not authenticated")
 	}
 
-	path := fmt.Sprintf("Projects.%s.Objects.%s", projectID, object.ID)
-	err = db.UpdateItem(email, path, object)
+	err = db.UpdateObject(email, projectID, object)
 	return errors.Wrap(err, "Failed database call to put object")
 }

@@ -8,7 +8,7 @@ import (
 
 // loginDatabase wraps the database methods required to perform the login action.
 type loginDatabase interface {
-	GetUser(string) (*dao.User, error)
+	GetUserInfo(string) (*dao.User, error)
 	UpdateUserToken(string, string) error
 }
 
@@ -21,7 +21,7 @@ func login(email string, password string, generateToken generateTokenFunc, gener
 		return "", errors.NewClient("Email and password parameters are required")
 	}
 
-	user, err := db.GetUser(email)
+	user, err := db.GetUserInfo(email)
 	if err != nil {
 		return "", errors.Wrap(err, "Failed to get user")
 	}

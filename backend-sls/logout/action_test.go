@@ -15,7 +15,7 @@ type databaseMock struct {
 	err   error
 }
 
-func (mock *databaseMock) GetUser(email string) (*dao.User, error) {
+func (mock *databaseMock) GetUserInfo(email string) (*dao.User, error) {
 	return nil, nil
 }
 

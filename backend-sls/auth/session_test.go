@@ -8,7 +8,7 @@ import (
 
 type userGetterFunc func(string) (*dao.User, error)
 
-func (f userGetterFunc) GetUser(email string) (*dao.User, error) {
+func (f userGetterFunc) GetUserInfo(email string) (*dao.User, error) {
 	return f(email)
 }
 

@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 )
 
@@ -63,6 +62,110 @@ func updateItemMock(mockInput *dynamodb.UpdateItemInput, mockOutput *dynamodb.Up
 	}
 }
 
+// ------------- GetUser Tests ------------------
+
+var getUserTests = []struct {
+	name string
+
+	// Input
+	email          string
+	expression     string
+	attributeNames map[string]*string
+
+	// Mock data
+	mockInput  *dynamodb.GetItemInput
+	mockOutput *dynamodb.GetItemOutput
+	mockErr    error
+
+	// Expected output
+	wantUser *User
+	wantErr  error
+}{
+	{
+		name:       "ServiceError",
+		email:      "email",
+		expression: "Email, Password, SessionToken",
+		mockInput: &dynamodb.GetItemInput{
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("email"),
+				},
+			},
+			ProjectionExpression: aws.String("Email, Password, SessionToken"),
+			TableName:            aws.String(os.Getenv("TABLE_NAME")),
+		},
+		mockErr: errors.NewServer("DynamoDB failed"),
+		wantErr: errors.Wrap(errors.NewServer("DynamoDB failed"), "Failed DynamoDB GetItem call"),
+	},
+	{
+		name:       "NonexistentUser",
+		email:      "email",
+		expression: "Projects.#pid",
+		attributeNames: map[string]*string{
+			"#pid": aws.String("projectID"),
+		},
+		mockInput: &dynamodb.GetItemInput{
+			ExpressionAttributeNames: map[string]*string{
+				"#pid": aws.String("projectID"),
+			},
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("email"),
+				},
+			},
+			ProjectionExpression: aws.String("Projects.#pid"),
+			TableName:            aws.String(os.Getenv("TABLE_NAME")),
+		},
+		mockOutput: &dynamodb.GetItemOutput{},
+		wantErr:    errors.NewClient("Email 'email' not found"),
+	},
+	{
+		name:       "SuccessfulInvocation",
+		email:      "email",
+		expression: "Email, Password, SessionToken",
+		mockInput: &dynamodb.GetItemInput{
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("email"),
+				},
+			},
+			ProjectionExpression: aws.String("Email, Password, SessionToken"),
+			TableName:            aws.String(os.Getenv("TABLE_NAME")),
+		},
+		mockOutput: &dynamodb.GetItemOutput{
+			Item: map[string]*dynamodb.AttributeValue{
+				"Email":        {S: aws.String("email")},
+				"Password":     {S: aws.String("password")},
+				"SessionToken": {S: aws.String("sessionToken")},
+			},
+		},
+		wantUser: &User{Email: "email", Password: "password", Token: "sessionToken"},
+	},
+}
+
+func TestGetUser(t *testing.T) {
+	for _, test := range getUserTests {
+		t.Run(test.name, func(t *testing.T) {
+			// Setup
+			getSvc = getItemMock(test.mockInput, test.mockOutput, test.mockErr)
+			defer func() {
+				getSvc = defaultSvc
+			}()
+
+			// Execute
+			gotUser, gotErr := Dynamo.getUser(test.email, test.expression, test.attributeNames)
+
+			// Verify
+			if !reflect.DeepEqual(gotUser, test.wantUser) {
+				t.Errorf("Got user %v; want %v", gotUser, test.wantUser)
+			}
+			if !errors.Equal(gotErr, test.wantErr) {
+				t.Errorf("Got error '%s'; want '%s'", gotErr, test.wantErr)
+			}
+		})
+	}
+}
+
 // ---------------- GetProject Tests ----------------
 
 var getProjectTests = []struct {
@@ -76,47 +179,79 @@ var getProjectTests = []struct {
 	wantErr     error
 }{
 	{
-		name:       "ServiceError",
-		email:      "email",
-		projectID:  "projectID",
-		mockInput:  getProjectMockInput("email", "Projects.projectID"),
-		mockOutput: getProjectMockOutput(Project{ID: "projectID", Name: "default"}),
-		mockErr:    errors.NewServer("DynamoDB error"),
-		wantErr:    errors.Wrap(errors.NewServer("DynamoDB error"), "Failed DynamoDB GetItem call"),
+		name:      "ServiceError",
+		email:     "email",
+		projectID: "projectID",
+		mockInput: &dynamodb.GetItemInput{
+			ExpressionAttributeNames: map[string]*string{
+				"#pid": aws.String("projectID"),
+			},
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("email"),
+				},
+			},
+			ProjectionExpression: aws.String("Projects.#pid"),
+			TableName:            aws.String(os.Getenv("TABLE_NAME")),
+		},
+		mockErr: errors.NewServer("DynamoDB error"),
+		wantErr: errors.Wrap(errors.Wrap(errors.NewServer("DynamoDB error"), "Failed DynamoDB GetItem call"), "Failed to get user with email 'email'"),
 	},
 	{
-		name:        "SuccessfulInvocation",
-		email:       "email",
-		projectID:   "projectID",
-		mockInput:   getProjectMockInput("email", "Projects.projectID"),
-		mockOutput:  getProjectMockOutput(Project{ID: "projectID", Name: "default"}),
-		wantProject: &Project{ID: "projectID", Name: "default"},
-	},
-	{
-		name:       "NonexistentProject",
-		email:      "email",
-		projectID:  "projectID",
-		mockInput:  getProjectMockInput("email", "Projects.projectID"),
-		mockOutput: &dynamodb.GetItemOutput{},
-		wantErr:    errors.NewClient("Project `projectID` not found"),
-	},
-}
-
-func getProjectMockInput(email string, projectionExpression string) *dynamodb.GetItemInput {
-	return &dynamodb.GetItemInput{
-		Key: map[string]*dynamodb.AttributeValue{
-			"Email": {
-				S: aws.String(email),
+		name:      "NonexistentProject",
+		email:     "email",
+		projectID: "projectID",
+		mockInput: &dynamodb.GetItemInput{
+			ExpressionAttributeNames: map[string]*string{
+				"#pid": aws.String("projectID"),
+			},
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("email"),
+				},
+			},
+			ProjectionExpression: aws.String("Projects.#pid"),
+			TableName:            aws.String(os.Getenv("TABLE_NAME")),
+		},
+		mockOutput: &dynamodb.GetItemOutput{
+			Item: map[string]*dynamodb.AttributeValue{
+				"Projects": {M: map[string]*dynamodb.AttributeValue{}},
 			},
 		},
-		ProjectionExpression: aws.String(projectionExpression),
-		TableName:            aws.String(os.Getenv("TABLE_NAME")),
-	}
-}
-
-func getProjectMockOutput(project Project) *dynamodb.GetItemOutput {
-	av, _ := dynamodbattribute.MarshalMap(project)
-	return &dynamodb.GetItemOutput{Item: av}
+		wantErr: errors.NewClient("Project 'projectID' not found"),
+	},
+	{
+		name:      "SuccessfulInvocation",
+		email:     "email",
+		projectID: "projectID",
+		mockInput: &dynamodb.GetItemInput{
+			ExpressionAttributeNames: map[string]*string{
+				"#pid": aws.String("projectID"),
+			},
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("email"),
+				},
+			},
+			ProjectionExpression: aws.String("Projects.#pid"),
+			TableName:            aws.String(os.Getenv("TABLE_NAME")),
+		},
+		mockOutput: &dynamodb.GetItemOutput{
+			Item: map[string]*dynamodb.AttributeValue{
+				"Projects": {
+					M: map[string]*dynamodb.AttributeValue{
+						"projectID": {
+							M: map[string]*dynamodb.AttributeValue{
+								"Id":   {S: aws.String("projectID")},
+								"Name": {S: aws.String("default")},
+							},
+						},
+					},
+				},
+			},
+		},
+		wantProject: &Project{ID: "projectID", Name: "default"},
+	},
 }
 
 func TestGetProject(t *testing.T) {
@@ -137,79 +272,6 @@ func TestGetProject(t *testing.T) {
 			}
 			if !errors.Equal(err, test.wantErr) {
 				t.Errorf("Got error '%s'; want '%s'", err, test.wantErr)
-			}
-		})
-	}
-}
-
-// ------------- GetUser Tests ------------------
-
-var getUserTests = []struct {
-	name       string
-	email      string
-	mockInput  *dynamodb.GetItemInput
-	mockOutput *dynamodb.GetItemOutput
-	mockErr    error
-	wantUser   *User
-	wantErr    error
-}{
-	{
-		name:      "ServiceError",
-		email:     "email",
-		mockInput: getUserMockInput("email"),
-		mockErr:   errors.NewServer("DynamoDB failed"),
-		wantErr:   errors.Wrap(errors.NewServer("DynamoDB failed"), "Failed DynamoDB GetItem call"),
-	},
-	{
-		name:       "NonexistentUser",
-		email:      "email",
-		mockInput:  getUserMockInput("email"),
-		mockOutput: &dynamodb.GetItemOutput{},
-		wantErr:    errors.NewClient("Email `email` not found"),
-	},
-	{
-		name:       "SuccessfulInvocation",
-		email:      "email",
-		mockInput:  getUserMockInput("email"),
-		mockOutput: getUserMockOutput(&User{Email: "email", Password: "password", Token: "token"}),
-		wantUser:   &User{Email: "email", Password: "password", Token: "token"},
-	},
-}
-
-func getUserMockInput(email string) *dynamodb.GetItemInput {
-	return &dynamodb.GetItemInput{
-		Key: map[string]*dynamodb.AttributeValue{
-			"Email": {
-				S: aws.String(email),
-			},
-		},
-		TableName: aws.String(os.Getenv("TABLE_NAME")),
-	}
-}
-
-func getUserMockOutput(user *User) *dynamodb.GetItemOutput {
-	av, _ := dynamodbattribute.MarshalMap(user)
-	return &dynamodb.GetItemOutput{Item: av}
-}
-
-func TestGetUser(t *testing.T) {
-	for _, test := range getUserTests {
-		t.Run(test.name, func(t *testing.T) {
-			// Setup
-			getSvc = getItemMock(test.mockInput, test.mockOutput, test.mockErr)
-			defer func() {
-				getSvc = defaultSvc
-			}()
-
-			// Execute
-			gotUser, gotErr := Dynamo.GetUser(test.email)
-
-			// Verify
-			if !reflect.DeepEqual(gotUser, test.wantUser) {
-				t.Errorf("Got user %v; want %v", gotUser, test.wantUser)
-			}
-			if !errors.Equal(gotErr, test.wantErr) {
-				t.Errorf("Got error '%s'; want '%s'", gotErr, test.wantErr)
 			}
 		})
 	}
@@ -293,45 +355,257 @@ func TestCreateUser(t *testing.T) {
 
 // ------------- UpdateUserToken Tests -------------------
 
-var updateUserTokenTests = []struct {
-	name      string
-	email     string
-	token     string
+// var updateUserTokenTests = []struct {
+// 	name      string
+// 	email     string
+// 	token     string
+// 	mockInput *dynamodb.UpdateItemInput
+// 	mockErr   error
+// 	wantErr   error
+// }{
+// 	{
+// 		name:      "ServiceError",
+// 		email:     "email",
+// 		token:     "token",
+// 		mockInput: updateUserTokenMockInput("email", "token"),
+// 		mockErr:   errors.NewServer("DynamoDB failure"),
+// 		wantErr:   errors.Wrap(errors.NewServer("DynamoDB failure"), "Failed DynamoDB UpdateItem call"),
+// 	},
+// 	{
+// 		name:      "SuccessfulInvocation",
+// 		email:     "email",
+// 		token:     "token",
+// 		mockInput: updateUserTokenMockInput("email", "token"),
+// 	},
+// }
+
+// func updateUserTokenMockInput(email string, token string) *dynamodb.UpdateItemInput {
+// 	return &dynamodb.UpdateItemInput{
+// 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+// 			":t": {
+// 				S: aws.String(token),
+// 			},
+// 		},
+// 		Key: map[string]*dynamodb.AttributeValue{
+// 			"Email": {
+// 				S: aws.String(email),
+// 			},
+// 		},
+// 		TableName:        aws.String(os.Getenv("TABLE_NAME")),
+// 		UpdateExpression: aws.String("SET SessionToken=:t"),
+// 	}
+// }
+
+// func TestUpdateUserToken(t *testing.T) {
+// 	for _, test := range updateUserTokenTests {
+// 		t.Run(test.name, func(t *testing.T) {
+// 			// Setup
+// 			updateSvc = updateItemMock(test.mockInput, nil, test.mockErr)
+// 			defer func() {
+// 				updateSvc = defaultSvc
+// 			}()
+
+// 			// Execute
+// 			gotErr := Dynamo.UpdateUserToken(test.email, test.token)
+
+// 			// Verify
+// 			if !errors.Equal(gotErr, test.wantErr) {
+// 				t.Errorf("Got error '%s'; want '%s'", gotErr, test.wantErr)
+// 			}
+// 		})
+// 	}
+// }
+
+// -------------- Update Tests -----------------
+
+var updateUserTests = []struct {
+	name string
+
+	// Input
+	email          string
+	expression     string
+	attributeNames map[string]*string
+	items          map[string]interface{}
+
+	// Mock data
 	mockInput *dynamodb.UpdateItemInput
 	mockErr   error
-	wantErr   error
+
+	// Expected output
+	wantErr error
 }{
 	{
-		name:      "ServiceError",
-		email:     "email",
-		token:     "token",
-		mockInput: updateUserTokenMockInput("email", "token"),
-		mockErr:   errors.NewServer("DynamoDB failure"),
-		wantErr:   errors.Wrap(errors.NewServer("DynamoDB failure"), "Failed DynamoDB UpdateItem call"),
+		name:       "ServiceError",
+		email:      "error@test.com",
+		expression: "TEST update expression",
+		items: map[string]interface{}{
+			"key": "value",
+		},
+		mockInput: &dynamodb.UpdateItemInput{
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				"key": {
+					S: aws.String("value"),
+				},
+			},
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("error@test.com"),
+				},
+			},
+			TableName:        aws.String(os.Getenv("TABLE_NAME")),
+			UpdateExpression: aws.String("TEST update expression"),
+		},
+		mockErr: errors.NewServer("DynamoDB failure"),
+		wantErr: errors.Wrap(errors.NewServer("DynamoDB failure"), "Failed DynamoDB UpdateItem call"),
 	},
 	{
-		name:      "SuccessfulInvocation",
-		email:     "email",
-		token:     "token",
-		mockInput: updateUserTokenMockInput("email", "token"),
+		name:       "SuccessfulInvocation",
+		email:      "success@test.com",
+		expression: "TEST update expression 2",
+		attributeNames: map[string]*string{
+			"#pid": aws.String("attributeName"),
+		},
+		items: map[string]interface{}{
+			"key2": "value2",
+		},
+		mockInput: &dynamodb.UpdateItemInput{
+			ExpressionAttributeNames: map[string]*string{
+				"#pid": aws.String("attributeName"),
+			},
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				"key2": {
+					S: aws.String("value2"),
+				},
+			},
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("success@test.com"),
+				},
+			},
+			TableName:        aws.String(os.Getenv("TABLE_NAME")),
+			UpdateExpression: aws.String("TEST update expression 2"),
+		},
 	},
 }
 
-func updateUserTokenMockInput(email string, token string) *dynamodb.UpdateItemInput {
-	return &dynamodb.UpdateItemInput{
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":t": {
-				S: aws.String(token),
-			},
-		},
-		Key: map[string]*dynamodb.AttributeValue{
-			"Email": {
-				S: aws.String(email),
-			},
-		},
-		TableName:        aws.String(os.Getenv("TABLE_NAME")),
-		UpdateExpression: aws.String("SET SessionToken=:t"),
+func TestUpdateItem(t *testing.T) {
+	for _, test := range updateUserTests {
+		t.Run(test.name, func(t *testing.T) {
+			// Setup
+			updateSvc = updateItemMock(test.mockInput, nil, test.mockErr)
+			defer func() {
+				updateSvc = defaultSvc
+			}()
+
+			// Execute
+			gotErr := Dynamo.updateUser(test.email, test.expression, test.attributeNames, test.items)
+
+			// Verify
+			if !errors.Equal(gotErr, test.wantErr) {
+				t.Errorf("Got error '%s'; want '%s'", gotErr, test.wantErr)
+			}
+		})
 	}
+}
+
+var updateObjectTests = []struct {
+	name string
+
+	// Input
+	email     string
+	projectID string
+	object    *Object
+
+	// Mock data
+	mockInput *dynamodb.UpdateItemInput
+	mockErr   error
+
+	// Expected output
+	wantErr error
+}{
+	{
+		name:      "ServiceError",
+		email:     "error@test.com",
+		projectID: "projectID",
+		object:    &Object{ID: "objectID", Name: "objectName", Description: "objectDesc"},
+		mockInput: &dynamodb.UpdateItemInput{
+			ExpressionAttributeNames: map[string]*string{
+				"#pid": aws.String("projectID"),
+				"#oid": aws.String("objectID"),
+			},
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":obj": {
+					M: map[string]*dynamodb.AttributeValue{
+						"Id":          {S: aws.String("objectID")},
+						"Name":        {S: aws.String("objectName")},
+						"Description": {S: aws.String("objectDesc")},
+					},
+				},
+			},
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("error@test.com"),
+				},
+			},
+			TableName:        aws.String(os.Getenv("TABLE_NAME")),
+			UpdateExpression: aws.String("SET Projects.#pid.Objects.#oid = :obj"),
+		},
+		mockErr: errors.NewServer("DynamoDB failure"),
+		wantErr: errors.Wrap(errors.NewServer("DynamoDB failure"), "Failed DynamoDB UpdateItem call"),
+	},
+}
+
+func TestUpdateObject(t *testing.T) {
+	for _, test := range updateObjectTests {
+		t.Run(test.name, func(t *testing.T) {
+			// Setup
+			updateSvc = updateItemMock(test.mockInput, nil, test.mockErr)
+			defer func() {
+				updateSvc = defaultSvc
+			}()
+
+			// Execute
+			gotErr := Dynamo.UpdateObject(test.email, test.projectID, test.object)
+
+			// Verify
+			if !errors.Equal(gotErr, test.wantErr) {
+				t.Errorf("Got error '%s'; want '%s'", gotErr, test.wantErr)
+			}
+		})
+	}
+}
+
+var updateUserTokenTests = []struct {
+	name string
+
+	// Input
+	email string
+	token string
+
+	// Mock data
+	mockInput *dynamodb.UpdateItemInput
+	mockErr   error
+
+	// Expected output
+	wantErr error
+}{
+	{
+		name:  "SuccessfulInvocation",
+		email: "success@test.com",
+		token: "tokenValue",
+		mockInput: &dynamodb.UpdateItemInput{
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":tok": {S: aws.String("tokenValue")},
+			},
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("success@test.com"),
+				},
+			},
+			TableName:        aws.String(os.Getenv("TABLE_NAME")),
+			UpdateExpression: aws.String("SET SessionToken = :tok"),
+		},
+	},
 }
 
 func TestUpdateUserToken(t *testing.T) {
@@ -345,104 +619,6 @@ func TestUpdateUserToken(t *testing.T) {
 
 			// Execute
 			gotErr := Dynamo.UpdateUserToken(test.email, test.token)
-
-			// Verify
-			if !errors.Equal(gotErr, test.wantErr) {
-				t.Errorf("Got error '%s'; want '%s'", gotErr, test.wantErr)
-			}
-		})
-	}
-}
-
-// -------------- UpdateItem Tests -----------------
-
-var updateTokenInput = &dynamodb.UpdateItemInput{
-	ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-		":item": {
-			S: aws.String("token"),
-		},
-	},
-	Key: map[string]*dynamodb.AttributeValue{
-		"Email": {
-			S: aws.String("test@example.com"),
-		},
-	},
-	TableName:        aws.String(os.Getenv("TABLE_NAME")),
-	UpdateExpression: aws.String("SET path = :item"),
-}
-
-var updateObjectInput = &dynamodb.UpdateItemInput{
-	ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-		":item": {
-			M: map[string]*dynamodb.AttributeValue{
-				"Name": {
-					S: aws.String("Object Name"),
-				},
-				"Description": {
-					S: aws.String("Test description"),
-				},
-				"Id": {
-					S: aws.String("objectId"),
-				},
-			},
-		},
-	},
-	Key: map[string]*dynamodb.AttributeValue{
-		"Email": {
-			S: aws.String("test@example.com"),
-		},
-	},
-	TableName:        aws.String(os.Getenv("TABLE_NAME")),
-	UpdateExpression: aws.String("SET path = :item"),
-}
-
-var updateItemTests = []struct {
-	name string
-
-	// Input
-	item interface{}
-
-	// Mock data
-	mockInput *dynamodb.UpdateItemInput
-	mockErr   error
-
-	// Expected output
-	wantErr error
-}{
-	{
-		name:      "ServiceError",
-		item:      "token",
-		mockInput: updateTokenInput,
-		mockErr:   errors.NewServer("DynamoDB failure"),
-		wantErr:   errors.Wrap(errors.NewServer("DynamoDB failure"), "Failed DynamoDB UpdateItem call"),
-	},
-	{
-		name:      "AuthTokenItem",
-		item:      "token",
-		mockInput: updateTokenInput,
-		mockErr:   nil,
-		wantErr:   nil,
-	},
-	{
-		name:      "ObjectItem",
-		item:      &Object{ID: "objectId", Name: "Object Name", Description: "Test description"},
-		mockInput: updateObjectInput,
-		mockErr:   nil,
-		wantErr:   nil,
-	},
-}
-
-func TestUpdateItem(t *testing.T) {
-	for _, test := range updateItemTests {
-		t.Run(test.name, func(t *testing.T) {
-			// Setup
-			updateSvc = updateItemMock(test.mockInput, nil, test.mockErr)
-			defer func() {
-				updateSvc = defaultSvc
-			}()
-
-			// Execute
-			gotErr := Dynamo.UpdateItem("test@example.com", "path", test.item)
 
 			// Verify
 			if !errors.Equal(gotErr, test.wantErr) {

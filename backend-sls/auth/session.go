@@ -17,7 +17,7 @@ const key = "TODO:changeThisKey"
 
 // UserGetter wraps the GetUser function for database dependency injection when verifying cookies.
 type UserGetter interface {
-	GetUser(string) (*dao.User, error)
+	GetUserInfo(string) (*dao.User, error)
 }
 
 // splitCookie takes a cookie in the following format
@@ -95,7 +95,7 @@ func VerifyCookie(cookie string, db UserGetter) (email string, err error) {
 		return "", errors.NewClient("Not authenticated")
 	}
 
-	user, err := db.GetUser(email)
+	user, err := db.GetUserInfo(email)
 	if err != nil {
 		return "", errors.Wrap(err, "Failed to get user from database")
 	}

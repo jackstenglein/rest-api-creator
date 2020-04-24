@@ -15,7 +15,7 @@ type loginDBMock struct {
 	updateTokenErr error
 }
 
-func (mock *loginDBMock) GetUser(email string) (*dao.User, error) {
+func (mock *loginDBMock) GetUserInfo(email string) (*dao.User, error) {
 	if email != mock.email {
 		return nil, errors.NewServer("Incorrect input to GetUser mock")
 	}
