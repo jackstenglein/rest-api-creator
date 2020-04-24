@@ -23,7 +23,7 @@ type Object struct {
 	Name        string       `dynamodbav:"Name" json:"name"`
 	CodeName    string       `dynamodbav:"CodeName" json:"-"`
 	Description string       `dynamodbav:"Description" json:"description"`
-	Attributes  []*Attribute `dynamodbav:"Attributes" json:"attributes"`
+	Attributes  []*Attribute `dynamodbav:"Attributes,omitempty" json:"attributes,omitempty"`
 }
 
 // Attribute represents an instance of the Attribute model in the database.

@@ -83,35 +83,38 @@ func validObject(object *dao.Object) error {
 	return nil
 }
 
-// putObject either creates or replaces the given object within the given project. If an error occurs,
-// it is returned. If the object's `ID` field is empty, a UUID will be generated for the object and the
-// object will be created in the project. If the object's `ID` field is not empty and an object with the
+// putObject either creates or replaces the given object within the given project. The object's ID is returned.
+// If an error occurs, it is returned. If the object's `ID` field is empty, a UUID will be generated for the object
+// and the object will be created in the project. If the object's `ID` field is not empty and an object with the
 // ID value already exists in the project, the existing object will be replaced. If the object's `ID`
 // field is not empty but no object with the ID value already exists, then the given object will be created
 // as a new object.
-func putObject(cookie string, projectID string, object *dao.Object, verifyCookie verifyCookieFunc, db putObjectDatabase, uuid uuidFunc) error {
+func putObject(cookie string, projectID string, object *dao.Object, verifyCookie verifyCookieFunc, db putObjectDatabase, uuid uuidFunc) (string, error) {
 	if cookie == "" || projectID == "" || object == nil {
-		return errors.NewClient("Parameters `cookie`, `projectId` and `object` are required")
+		return "", errors.NewClient("Parameters `cookie`, `projectId` and `object` are required")
 	}
 
 	err := validObject(object)
 	if err != nil {
-		return errors.Wrap(err, "Object is invalid")
+		return "", errors.Wrap(err, "Object is invalid")
 	}
 
 	if object.ID == "" {
 		uuid, err := uuid()
 		if err != nil {
-			return errors.Wrap(err, "Failed to generate UUID")
+			return "", errors.Wrap(err, "Failed to generate UUID")
 		}
 		object.ID = uuid.String()
 	}
 
 	email, err := verifyCookie(cookie, db)
 	if err != nil {
-		return errors.NewClient("Not authenticated")
+		return "", errors.NewClient("Not authenticated")
 	}
 
 	err = db.UpdateObject(email, projectID, object)
-	return errors.Wrap(err, "Failed database call to put object")
+	if err != nil {
+		return "", errors.Wrap(err, "Failed database call to put object")
+	}
+	return object.ID, nil
 }

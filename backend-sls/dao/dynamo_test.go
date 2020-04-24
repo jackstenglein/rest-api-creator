@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -58,6 +59,8 @@ func updateItemMock(mockInput *dynamodb.UpdateItemInput, mockOutput *dynamodb.Up
 		if reflect.DeepEqual(input, mockInput) {
 			return mockOutput, mockErr
 		}
+		fmt.Println("Actual input:", input)
+		fmt.Println("Expected input:", mockInput)
 		return nil, errors.NewServer("Incorrect UpdateItemInput to mock")
 	}
 }
@@ -364,69 +367,6 @@ func TestCreateUser(t *testing.T) {
 	}
 }
 
-// ------------- UpdateUserToken Tests -------------------
-
-// var updateUserTokenTests = []struct {
-// 	name      string
-// 	email     string
-// 	token     string
-// 	mockInput *dynamodb.UpdateItemInput
-// 	mockErr   error
-// 	wantErr   error
-// }{
-// 	{
-// 		name:      "ServiceError",
-// 		email:     "email",
-// 		token:     "token",
-// 		mockInput: updateUserTokenMockInput("email", "token"),
-// 		mockErr:   errors.NewServer("DynamoDB failure"),
-// 		wantErr:   errors.Wrap(errors.NewServer("DynamoDB failure"), "Failed DynamoDB UpdateItem call"),
-// 	},
-// 	{
-// 		name:      "SuccessfulInvocation",
-// 		email:     "email",
-// 		token:     "token",
-// 		mockInput: updateUserTokenMockInput("email", "token"),
-// 	},
-// }
-
-// func updateUserTokenMockInput(email string, token string) *dynamodb.UpdateItemInput {
-// 	return &dynamodb.UpdateItemInput{
-// 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-// 			":t": {
-// 				S: aws.String(token),
-// 			},
-// 		},
-// 		Key: map[string]*dynamodb.AttributeValue{
-// 			"Email": {
-// 				S: aws.String(email),
-// 			},
-// 		},
-// 		TableName:        aws.String(os.Getenv("TABLE_NAME")),
-// 		UpdateExpression: aws.String("SET SessionToken=:t"),
-// 	}
-// }
-
-// func TestUpdateUserToken(t *testing.T) {
-// 	for _, test := range updateUserTokenTests {
-// 		t.Run(test.name, func(t *testing.T) {
-// 			// Setup
-// 			updateSvc = updateItemMock(test.mockInput, nil, test.mockErr)
-// 			defer func() {
-// 				updateSvc = defaultSvc
-// 			}()
-
-// 			// Execute
-// 			gotErr := Dynamo.UpdateUserToken(test.email, test.token)
-
-// 			// Verify
-// 			if !errors.Equal(gotErr, test.wantErr) {
-// 				t.Errorf("Got error '%s'; want '%s'", gotErr, test.wantErr)
-// 			}
-// 		})
-// 	}
-// }
-
 // -------------- Update Tests -----------------
 
 var updateUserTests = []struct {
@@ -538,7 +478,7 @@ var updateObjectTests = []struct {
 		name:      "ServiceError",
 		email:     "error@test.com",
 		projectID: "projectID",
-		object:    &Object{ID: "objectID", Name: "objectName", Description: "objectDesc"},
+		object:    &Object{ID: "objectID", Name: "objectName", CodeName: "ObjectName", Description: "objectDesc"},
 		mockInput: &dynamodb.UpdateItemInput{
 			ExpressionAttributeNames: map[string]*string{
 				"#pid": aws.String("projectID"),
@@ -549,6 +489,7 @@ var updateObjectTests = []struct {
 					M: map[string]*dynamodb.AttributeValue{
 						"Id":          {S: aws.String("objectID")},
 						"Name":        {S: aws.String("objectName")},
+						"CodeName":    {S: aws.String("ObjectName")},
 						"Description": {S: aws.String("objectDesc")},
 					},
 				},

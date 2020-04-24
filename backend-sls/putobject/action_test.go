@@ -63,6 +63,7 @@ var putObjectTests = []struct {
 	verifyErr error
 
 	// Expected output
+	wantID  string
 	wantErr error
 }{
 	{
@@ -199,7 +200,8 @@ var putObjectTests = []struct {
 			},
 			nil,
 		},
-		email: "test@example.com",
+		email:  "test@example.com",
+		wantID: "id",
 	},
 	{
 		name:      "SuccessfulCreate",
@@ -209,6 +211,7 @@ var putObjectTests = []struct {
 		uuidFunc:  newUUIDMock(nil),
 		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: mockUUIDString, Name: "name", CodeName: "Name", Description: "desc"}, nil},
 		email:     "test@example.com",
+		wantID:    mockUUIDString,
 	},
 }
 
@@ -219,9 +222,12 @@ func TestPutObject(t *testing.T) {
 			verifyCookie := verifyCookieMock("cookie", test.db, test.email, test.verifyErr)
 
 			// Execute
-			err := putObject(test.cookie, test.projectID, test.object, verifyCookie, test.db, test.uuidFunc)
+			id, err := putObject(test.cookie, test.projectID, test.object, verifyCookie, test.db, test.uuidFunc)
 
 			// Verify
+			if id != test.wantID {
+				t.Errorf("Got id '%s'; want '%s'", id, test.wantID)
+			}
 			if !errors.Equal(err, test.wantErr) {
 				t.Errorf("Got err %v; want %v", err, test.wantErr)
 			}

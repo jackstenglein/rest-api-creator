@@ -14,6 +14,7 @@ import (
 
 // putObjectResponse contains the fields returned in the API JSON response body.
 type putObjectResponse struct {
+	ID    string `json:"id,omitempty"`
 	Error string `json:"error,omitempty"`
 }
 
@@ -34,12 +35,12 @@ func HandlePutObject(request events.APIGatewayProxyRequest) (events.APIGatewayPr
 	json.Unmarshal([]byte(request.Body), &object)
 
 	// Perform the action
-	err := putObjectFunc(cookie, projectID, object, auth.VerifyCookie, dao.Dynamo, uuid.NewRandom)
+	id, err := putObjectFunc(cookie, projectID, object, auth.VerifyCookie, dao.Dynamo, uuid.NewRandom)
 
 	// Handle the output
 	errString, status := errors.UserDetails(err)
 	fmt.Println(errors.StackTrace(err))
-	json, err := json.Marshal(&putObjectResponse{Error: errString})
+	json, err := json.Marshal(&putObjectResponse{ID: id, Error: errString})
 	if err != nil {
 		fmt.Println(errors.StackTrace(errors.Wrap(err, "Failed to marshal PutObject response")))
 	}
