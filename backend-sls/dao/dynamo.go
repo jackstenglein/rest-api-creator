@@ -59,6 +59,18 @@ func (dynamo) CreateUser(email string, password string, token string) error {
 			"SessionToken": {
 				S: aws.String(token),
 			},
+			// TODO: Remove this and dynamically create projects
+			"Projects": {
+				M: map[string]*dynamodb.AttributeValue{
+					"default": {
+						M: map[string]*dynamodb.AttributeValue{
+							"Id":      {S: aws.String("default")},
+							"Name":    {S: aws.String("Default Project")},
+							"Objects": {M: map[string]*dynamodb.AttributeValue{}},
+						},
+					},
+				},
+			},
 		},
 		TableName: aws.String(os.Getenv("TABLE_NAME")),
 	}
@@ -132,29 +144,6 @@ func (dynamo) GetProject(email string, projectID string) (*Project, error) {
 	return project, nil
 }
 
-// UpdateUserToken sets the auth token on the User object associated with the given email
-// in the database.
-// TODO: Check that this doesn't create a new user obejct if email doesn't exist in DB.
-// func (dynamo) UpdateUserToken(email string, token string) error {
-// 	input := &dynamodb.UpdateItemInput{
-// 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-// 			":t": {
-// 				S: aws.String(token),
-// 			},
-// 		},
-// 		Key: map[string]*dynamodb.AttributeValue{
-// 			"Email": {
-// 				S: aws.String(email),
-// 			},
-// 		},
-// 		TableName:        aws.String(os.Getenv("TABLE_NAME")),
-// 		UpdateExpression: aws.String("SET SessionToken=:t"),
-// 	}
-
-// 	_, err := updateSvc.UpdateItem(input)
-// 	return errors.Wrap(err, "Failed DynamoDB UpdateItem call")
-// }
-
 // updateUser updates the properties of the user given in expression with the given items. If expression is not a valid
 // property path for the given user, a client error is returned. If something else goes wrong, a server
 // error is returned.
@@ -183,12 +172,12 @@ func (dynamo) updateUser(email string, expression string, attributeNames map[str
 		UpdateExpression: aws.String(expression),
 	}
 
-	// fmt.Println("DynamoDB input:", input)
-
 	_, err := updateSvc.UpdateItem(input)
 	return errors.Wrap(err, "Failed DynamoDB UpdateItem call")
 }
 
+// UpdateObject either creates or replaces the given object within the given project. If an error occurs,
+// it is returned.
 func (dynamo) UpdateObject(email string, projectID string, object *Object) error {
 	expression := "SET Projects.#pid.Objects.#oid = :obj"
 	attributeNames := map[string]*string{

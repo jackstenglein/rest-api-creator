@@ -328,6 +328,17 @@ func createUserMockInput(email string, password string, token string) *dynamodb.
 			"SessionToken": {
 				S: aws.String(token),
 			},
+			"Projects": {
+				M: map[string]*dynamodb.AttributeValue{
+					"default": {
+						M: map[string]*dynamodb.AttributeValue{
+							"Id":      {S: aws.String("default")},
+							"Name":    {S: aws.String("Default Project")},
+							"Objects": {M: map[string]*dynamodb.AttributeValue{}},
+						},
+					},
+				},
+			},
 		},
 		TableName: aws.String(os.Getenv("TABLE_NAME")),
 	}
