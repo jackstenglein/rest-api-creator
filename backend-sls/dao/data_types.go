@@ -19,7 +19,18 @@ type Project struct {
 
 // Object represents an instance of the Object model in the database.
 type Object struct {
-	ID          string `dynamodbav:"Id" json:"id"`
+	ID          string       `dynamodbav:"Id" json:"id"`
+	Name        string       `dynamodbav:"Name" json:"name"`
+	CodeName    string       `dynamodbav:"CodeName" json:"-"`
+	Description string       `dynamodbav:"Description" json:"description"`
+	Attributes  []*Attribute `dynamodbav:"Attributes" json:"attributes"`
+}
+
+// Attribute represents an instance of the Attribute model in the database.
+type Attribute struct {
 	Name        string `dynamodbav:"Name" json:"name"`
+	CodeName    string `dynamodbav:"CodeName" json:"-"`
+	Type        string `dynamodbav:"Type" json:"type"`
+	Required    bool   `dynamodbav:"Required" json:"required"`
 	Description string `dynamodbav:"Description" json:"description"`
 }

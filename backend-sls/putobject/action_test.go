@@ -1,6 +1,7 @@
 package putobject
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -32,7 +33,8 @@ func (mock *databaseMock) GetUserInfo(email string) (*dao.User, error) {
 
 func (mock *databaseMock) UpdateObject(email string, projectID string, object *dao.Object) error {
 	if email != mock.email || projectID != mock.projectID || !reflect.DeepEqual(object, mock.object) {
-		return errors.NewServer("Incorrect input to UpdateObject mock")
+		fmt.Printf("Got %v; want %v", object, mock.object)
+		return errors.NewServer("Incorrect input to UpdateObject mock.")
 	}
 	return mock.err
 }
@@ -83,13 +85,72 @@ var putObjectTests = []struct {
 		cookie:    "cookie",
 		projectID: "projectId",
 		object:    &dao.Object{},
-		wantErr:   errors.NewClient("Object must have a `name` field"),
+		wantErr:   errors.Wrap(errors.NewClient("Object must have a `name` field"), "Object is invalid"),
+	},
+	{
+		name:      "ObjectInvalidName",
+		cookie:    "cookie",
+		projectID: "projectId",
+		object:    &dao.Object{Name: "New Object"},
+		wantErr:   errors.Wrap(errors.NewClient("Object name `New Object` contains non-alphabetical characters"), "Object is invalid"),
+	},
+	{
+		name:      "NilAttribute",
+		cookie:    "cookie",
+		projectID: "projectId",
+		object: &dao.Object{
+			Name:        "NewObject",
+			Description: "desc",
+			Attributes: []*dao.Attribute{
+				nil,
+			},
+		},
+		wantErr: errors.Wrap(errors.Wrap(errors.NewClient("Attribute cannot be nil"), "Object must have valid attributes"), "Object is invalid"),
+	},
+	{
+		name:      "AttributeEmptyName",
+		cookie:    "cookie",
+		projectID: "projectId",
+		object: &dao.Object{
+			Name:        "NewObject",
+			Description: "desc",
+			Attributes: []*dao.Attribute{
+				{Name: ""},
+			},
+		},
+		wantErr: errors.Wrap(errors.Wrap(errors.NewClient("Attribute must have a `name` field"), "Object must have valid attributes"), "Object is invalid"),
+	},
+	{
+		name:      "AttributeInvalidName",
+		cookie:    "cookie",
+		projectID: "projectId",
+		object: &dao.Object{
+			Name:        "NewObject",
+			Description: "desc",
+			Attributes: []*dao.Attribute{
+				{Name: "Invalid Name"},
+			},
+		},
+		wantErr: errors.Wrap(errors.Wrap(errors.NewClient("Attribute name `Invalid Name` contains non-alphabetical characters"), "Object must have valid attributes"), "Object is invalid"),
+	},
+	{
+		name:      "AttributeInvalidType",
+		cookie:    "cookie",
+		projectID: "projectId",
+		object: &dao.Object{
+			Name:        "NewObject",
+			Description: "desc",
+			Attributes: []*dao.Attribute{
+				{Name: "ValidName"},
+			},
+		},
+		wantErr: errors.Wrap(errors.Wrap(errors.NewClient("Attribute type `` is not supported"), "Object must have valid attributes"), "Object is invalid"),
 	},
 	{
 		name:      "UuidError",
 		cookie:    "cookie",
 		projectID: "projectId",
-		object:    &dao.Object{Name: "New object", Description: "desc"},
+		object:    &dao.Object{Name: "NewObject", Description: "desc"},
 		uuidFunc:  newUUIDMock(errors.NewServer("UUID failure")),
 		wantErr:   errors.Wrap(errors.NewServer("UUID failure"), "Failed to generate UUID"),
 	},
@@ -108,7 +169,7 @@ var putObjectTests = []struct {
 		cookie:    "cookie",
 		projectID: "projectId",
 		object:    &dao.Object{ID: "id", Name: "name", Description: "desc"},
-		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "id", Name: "name", Description: "desc"}, errors.NewServer("DDB failure")},
+		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "id", Name: "name", CodeName: "Name", Description: "desc"}, errors.NewServer("DDB failure")},
 		email:     "test@example.com",
 		wantErr:   errors.Wrap(errors.NewServer("DDB failure"), "Failed database call to put object"),
 	},
@@ -116,9 +177,29 @@ var putObjectTests = []struct {
 		name:      "SuccessfulUpdate",
 		cookie:    "cookie",
 		projectID: "projectId",
-		object:    &dao.Object{ID: "id", Name: "name", Description: "desc"},
-		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "id", Name: "name", Description: "desc"}, nil},
-		email:     "test@example.com",
+		object: &dao.Object{
+			ID:          "id",
+			Name:        "name",
+			Description: "desc",
+			Attributes: []*dao.Attribute{
+				{Name: "ValidName", Type: "Text"},
+			},
+		},
+		db: &databaseMock{
+			"test@example.com",
+			"projectId",
+			&dao.Object{
+				ID:          "id",
+				Name:        "name",
+				CodeName:    "Name",
+				Description: "desc",
+				Attributes: []*dao.Attribute{
+					{Name: "ValidName", Type: "Text", CodeName: "validName"},
+				},
+			},
+			nil,
+		},
+		email: "test@example.com",
 	},
 	{
 		name:      "SuccessfulCreate",
@@ -126,7 +207,7 @@ var putObjectTests = []struct {
 		projectID: "projectId",
 		object:    &dao.Object{Name: "name", Description: "desc"},
 		uuidFunc:  newUUIDMock(nil),
-		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: mockUUIDString, Name: "name", Description: "desc"}, nil},
+		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: mockUUIDString, Name: "name", CodeName: "Name", Description: "desc"}, nil},
 		email:     "test@example.com",
 	},
 }
