@@ -192,9 +192,9 @@ func TestErrorStack(t *testing.T) {
 	})
 
 	t.Run("StackFromError", func(t *testing.T) {
-		err1 := Wrap(baseErr, "Message err 1")
-		err2 := Wrap(err1, "Message err 2")
-		err3 := Wrap(err2, "Message err 3")
+		err1 := Wrap(baseErr, "Message err 1\n")
+		err2 := Wrap(err1, "Message err 2\t")
+		err3 := Wrap(err2, "Message err 3\r")
 		stack := stack(err3)
 
 		if !stack.hasElements() {

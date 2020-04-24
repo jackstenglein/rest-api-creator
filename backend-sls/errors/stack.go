@@ -1,6 +1,9 @@
 package errors
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // errorStack provides a convienent way to create and read string descriptions of
 // an error's call stack.
@@ -46,10 +49,10 @@ func stack(err error) *errorStack {
 	stack := newErrorStack()
 	cause := Cause(err)
 	for err != cause && err != nil {
-		line := fmt.Sprintf("%s: %s", Location(err), Message(err))
+		line := fmt.Sprintf("%s: %s", strings.TrimSpace(Location(err)), strings.TrimSpace(Message(err)))
 		stack.push(line)
 		err = Previous(err)
 	}
-	stack.push(Message(err))
+	stack.push(strings.TrimSpace(Message(err)))
 	return stack
 }
