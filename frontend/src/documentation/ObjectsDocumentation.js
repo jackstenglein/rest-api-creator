@@ -34,7 +34,7 @@ const ObjectDocumentation = props => (
       <tbody>
         {
           props.object.attributes.map(attribute => (
-            <AttributeDocumentation attribute={attribute} />
+            <AttributeDocumentation key={attribute.name} attribute={attribute} />
           ))
         }
       </tbody>
@@ -50,7 +50,7 @@ const ObjectsDocumentation = props => (
     <hr />
     {
       props.objects.map(object => (
-        <ObjectDocumentation object={object} />
+        <ObjectDocumentation key={object.name} object={object} />
       ))
     }
   </div>
