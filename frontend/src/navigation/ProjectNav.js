@@ -10,6 +10,7 @@ const ProjectNav = () => (
     <NavLink to="/app/objects" className={itemClassName} activeClassName="active">Objects</NavLink>
     <NavLink to="/app/endpoints" className={itemClassName} activeClassName="active">Endpoints</NavLink>
     <NavLink to="/app/documentation" className={itemClassName} activeClassName="active">Documentation</NavLink>
+    <ListGroup.Item></ListGroup.Item> {/* Invisible item adds a bottom border to documentation button */}
   </ListGroup>
 )
 

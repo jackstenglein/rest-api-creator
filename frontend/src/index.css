@@ -20,3 +20,7 @@ html, body, #root, .primary-layout, .height100 {
   margin-left: -15px;
   margin-right: -15px;
 }
+
+.list-group-flush .list-group-item:first-child {
+  border-top: 0px;
+}
