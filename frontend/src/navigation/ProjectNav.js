@@ -1,14 +1,16 @@
 import React from 'react';
-import Nav from 'react-bootstrap/Nav';
 import { NavLink } from 'react-router-dom';
+import ListGroup from 'react-bootstrap/ListGroup';
+
+const itemClassName="list-group-item list-group-item-action pl-5 pr-5"
 
 const ProjectNav = () => (
-  <Nav variant="pills" className="flex-column">
-    <NavLink to="/app/details" eventKey="details" className="nav-link" activeClassName="active"><Nav.Item>Project Details</Nav.Item></NavLink>
-    <NavLink to="/app/objects" eventKey="objects" className="nav-link" activeClassName="active"><Nav.Item>Objects</Nav.Item></NavLink>
-    <NavLink to="/app/endpoints" eventKey="endpoints" className="nav-link" activeClassName="active"><Nav.Item>Endpoints</Nav.Item></NavLink>
-    <NavLink to="/app/documentation" eventKey="documentation" className="nav-link" activeClassName="active"><Nav.Item>Documentation</Nav.Item></NavLink>
-  </Nav>
+  <ListGroup variant="flush" className="text-center sticky-top">
+    <NavLink to="/app/details" className={itemClassName} activeClassName="active">Project Details</NavLink>
+    <NavLink to="/app/objects" className={itemClassName} activeClassName="active">Objects</NavLink>
+    <NavLink to="/app/endpoints" className={itemClassName} activeClassName="active">Endpoints</NavLink>
+    <NavLink to="/app/documentation" className={itemClassName} activeClassName="active">Documentation</NavLink>
+  </ListGroup>
 )
 
 export default ProjectNav;

@@ -6,6 +6,7 @@ import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Documentation from '../documentation/Documentation.js';
+import Endpoints from '../endpoints/Endpoints.js';
 
 const PrimaryLayout = () => (
   <div className="primary-layout">
@@ -19,14 +20,13 @@ const PrimaryLayout = () => (
     <main className="height100">
       <Container fluid className="height100">
         <Row className="height100">
-          <Col xs="auto" className="border-right">
+          <Col xs="auto" className="border-right p-0 mr-1">
             <ProjectNav />
           </Col>
           <Col>
             <Route path="/app/objects/" component={ObjectLayout} />
-            <Route path="/app/documentation" render={(props) => 
-              <Documentation {...props} project={TEST_PROJECT}/>} 
-            />
+            <Route path="/app/endpoints/" component={Endpoints} />
+            <Route path="/app/documentation" render={(props) => <Documentation {...props} project={TEST_PROJECT}/>} />
           </Col>
         </Row>
       </Container>
