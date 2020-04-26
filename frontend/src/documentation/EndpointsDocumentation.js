@@ -15,6 +15,8 @@ const ParameterRow = props => (
   </tr>
 )
 
+// ParameterTable returns the JSX for a table of endpoint parameters. props should have a `children` field,
+// containing a list of ParameterRow objects.
 const ParameterTable = props => (
   <Table bordered striped className='mb-5'>
     <thead>
@@ -78,9 +80,7 @@ const UpdateDocumentation = props => {
       <p>This endpoint updates an existing {props.object.name} in the database with the given body parameters.</p>
       <h5>Parameters</h5>
       <ParameterTable>
-          {
-            <ParameterRow name={idName} required={true} description={"The id of the " + props.object.name.toLowerCase() + " to update."} location="Path"/>
-          }
+          <ParameterRow name={idName} required={true} description={"The id of the " + props.object.name.toLowerCase() + " to update."} location="Path"/>
           {
             props.object.attributes.map(attribute => (
               <ParameterRow key={attribute.name} name={attribute.name} required={attribute.required} description={attribute.description} location="Body"/>
@@ -102,15 +102,14 @@ const DeleteDocumentation = props => {
       <p>This endpoint removes the {props.object.name} with the given id from the database.</p>
       <h5>Parameters</h5>
       <ParameterTable>
-        {
-          <ParameterRow name={idName} required={true} description={"The id of the " + props.object.name.toLowerCase() + " to delete."} location="Path"/>
-        }
+        <ParameterRow name={idName} required={true} description={"The id of the " + props.object.name.toLowerCase() + " to delete."} location="Path"/>
       </ParameterTable>
     </div>
   )
 }
 
-
+// EndpointsDocumentation returns the JSX for the documentation of all endpoints. props should have an `objects` field,
+// containing a list of object definition.
 const EndpointsDocumentation = props => (
   <div>
     <h3>Endpoints</h3>
