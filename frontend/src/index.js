@@ -4,24 +4,64 @@ import './index.css';
 import * as serviceWorker from './serviceWorker';
 import App from './navigation/App';
 import { BrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import store from './redux/store';
+import { putObjectSuccess, putProjectSuccess } from './redux/modules/projects';
 
-// import { createStore, applyMiddleware } from 'redux';
-// import { crudCreatorApp } from './redux/reducers/mainReducer.js';
-// import thunkMiddleware from 'redux-thunk';
-// import Root from './Root'
+const TEST_PROJECT = {
+  id: "defaultProject",
+  name: "Default Project",
+  description: "This is a sample project to test static UI. This project will eventually be dynamically pulled from Redux.",
+  objects: [
+    {
+      name: "User",
+      description: "User represents the structure of an end user in the database.",
+      attributes: [
+        {
+          name: "AttributeOne",
+          type: "Integer",
+          required: true,
+          description: "AttributeOne is an integer attribute that stores the first attribute of the user."
+        },
+        {
+          name: "AttributeTwo",
+          type: "Text",
+          required: false,
+          description: "AttributeTwo is a text attribute that stores the second attribute of the user."
+        }
+      ]
+    },
+    {
+      name: "Dog",
+      description: "Dog represents the structure of a dog object in the database.",
+      attributes: [
+        {
+          name: "AttributeOne",
+          type: "Text",
+          required: true,
+          description: "AttributeOne is a text attribute that stores the first attribute of the dog. This attribute is required."
+        },
+        {
+          name: "AttributeTwo",
+          type: "Text",
+          required: true,
+          description: "AttributeTwo is a text attribute that stores the second attribute of the dog."
+        }
+      ]
+    }
+  ]
+}
 
-// const store = createStore(
-//     crudCreatorApp,
-//     applyMiddleware(thunkMiddleware)
-// );
-
-// store.subscribe(() => console.log("STATE: ", store.getState()));
+store.dispatch(putProjectSuccess(TEST_PROJECT))
+store.dispatch(putObjectSuccess("defaultProject", {id: 5, name: "ObjectName", description: "Test object", attributes: []}))
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </Provider>
   </React.StrictMode>,
   document.getElementById('root')
 );
