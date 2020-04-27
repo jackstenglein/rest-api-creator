@@ -11,8 +11,8 @@ const listItemClassName="list-group-item list-group-item-action border-bottom"
 const ObjectList = props => (
   <ListGroup variant="flush">
     {
-      props.objects.map(object => 
-        <NavLink to="/app/objects/5/edit" className={listItemClassName}>{object.name}</NavLink>
+      Object.entries(props.objects).map(([id, object]) => 
+        <NavLink to={`/app/objects/${id}/edit`} className={listItemClassName}>{object.name}</NavLink>
       )
     }
   </ListGroup>

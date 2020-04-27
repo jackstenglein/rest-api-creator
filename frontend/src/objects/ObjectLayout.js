@@ -2,12 +2,12 @@ import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import ObjectEditor from './editor/ObjectEditor.js';
 import ObjectEditorContainer from './editor/ObjectEditorContainer.js';
-import ObjectListView from './ObjectListView.js';
+import ObjectListContainer from './ObjectListContainer.js';
 
 const ObjectLayout = props => (
   <div className="object-layout">
     <Switch>
-      <Route path={props.match.path} exact render={(props) => <ObjectListView {...props} objects={TEST_OBJECTS} />} />
+      <Route path={props.match.path} exact component={ObjectListContainer} />
       <Route path={`${props.match.path}create`} component={ObjectEditorContainer} />
       <Route path={`${props.match.path}:objectId/edit`} render={(props) => 
         <ObjectEditor {...props} values={EDITOR_VALUES} errors={EDITOR_ERRORS} path={EDITOR_PATH}/>} 
@@ -17,45 +17,6 @@ const ObjectLayout = props => (
   </div>
 )
 
-
-const TEST_OBJECTS = [
-  {
-    name: "User",
-    description: "User represents the structure of an end user in the database.",
-    attributes: [
-      {
-        name: "AttributeOne",
-        type: "Integer",
-        required: true,
-        description: "AttributeOne is an integer attribute that stores the first attribute of the user."
-      },
-      {
-        name: "AttributeTwo",
-        type: "Text",
-        required: false,
-        description: "AttributeTwo is a text attribute that stores the second attribute of the user."
-      }
-    ]
-  },
-  {
-    name: "Dog",
-    description: "Dog represents the structure of a dog object in the database.",
-    attributes: [
-      {
-        name: "AttributeOne",
-        type: "Text",
-        required: true,
-        description: "AttributeOne is a text attribute that stores the first attribute of the dog. This attribute is required."
-      },
-      {
-        name: "AttributeTwo",
-        type: "Text",
-        required: true,
-        description: "AttributeTwo is a text attribute that stores the second attribute of the dog."
-      }
-    ]
-  }
-]
 
 const EDITOR_PATH = [
   {
