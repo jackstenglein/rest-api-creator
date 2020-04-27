@@ -24,3 +24,7 @@ html, body, #root, .primary-layout, .height100 {
 .list-group-flush .list-group-item:first-child {
   border-top: 0px;
 }
+
+.opacity-5 {
+  opacity: 1!important;
+}

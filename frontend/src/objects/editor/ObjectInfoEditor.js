@@ -12,7 +12,7 @@ const ObjectInfoEditor = (props) => (
     <Form.Group>
     <Form.Label>Object name</Form.Label>
     <Form.Control
-      // onChange={callbacks.nameOnChange}
+      onChange={props.onChangeHandlers.name}
       value={props.values.name}
       placeholder="Enter name"
       isInvalid={props.errors.name !== undefined && props.errors.name.length > 0}
@@ -25,7 +25,7 @@ const ObjectInfoEditor = (props) => (
         as="textarea"
         rows="3"
         placeholder={OBJECT_DESC_PLACEHOLDER}
-        // onChange={callbacks.descriptionOnChange}
+        onChange={props.onChangeHandlers.description}
         value={props.values.description}
       />
     </Form.Group>

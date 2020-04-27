@@ -1,14 +1,14 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import ObjectEditor from './ObjectEditor.js';
+import ObjectEditor from './editor/ObjectEditor.js';
+import ObjectEditorContainer from './editor/ObjectEditorContainer.js';
 import ObjectListView from './ObjectListView.js';
 
 const ObjectLayout = props => (
   <div className="object-layout">
     <Switch>
       <Route path={props.match.path} exact render={(props) => <ObjectListView {...props} objects={TEST_OBJECTS} />} />
-      <Route path={`${props.match.path}create`} render={props =>
-        <ObjectEditor {...props} values={EMPTY_OBJECT} errors={EMPTY_OBJECT} />} />
+      <Route path={`${props.match.path}create`} component={ObjectEditorContainer} />
       <Route path={`${props.match.path}:objectId/edit`} render={(props) => 
         <ObjectEditor {...props} values={EDITOR_VALUES} errors={EDITOR_ERRORS} path={EDITOR_PATH}/>} 
       />
@@ -17,11 +17,6 @@ const ObjectLayout = props => (
   </div>
 )
 
-const EMPTY_OBJECT = {
-  name: "",
-  description: "",
-  attributes: []
-}
 
 const TEST_OBJECTS = [
   {
