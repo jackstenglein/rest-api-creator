@@ -7,6 +7,7 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import DocumentationContainer from '../documentation/DocumentationContainer.js';
 import Endpoints from '../endpoints/Endpoints.js';
+import ProjectDetails from '../details/ProjectDetails.js';
 
 const PrimaryLayout = () => (
   <div className="primary-layout">
@@ -24,6 +25,7 @@ const PrimaryLayout = () => (
             <ProjectNav />
           </Col>
           <Col>
+            <Route path="/app/" exact component={ProjectDetails} />
             <Route path="/app/objects/" component={ObjectLayout} />
             <Route path="/app/endpoints/" component={Endpoints} />
             <Route path="/app/documentation" component={DocumentationContainer} />
