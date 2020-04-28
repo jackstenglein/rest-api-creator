@@ -1,4 +1,6 @@
 import React from 'react';
+import { connect } from 'react-redux';
+import { putObjectSuccess } from '../../redux/modules/projects'; 
 import ObjectEditor from './ObjectEditor.js';
 import produce from 'immer';
 import validateObject from './Validator.js';
@@ -12,12 +14,6 @@ const EMPTY_OBJECT = {
       type: "",
       defaultValue: "",
       description: ""
-    },
-    {
-      name: "",
-      type: "",
-      defaultValue: "",
-      description: ""
     }
   ]
 }
@@ -26,16 +22,12 @@ class ObjectEditorContainer extends React.Component {
 
   constructor(props) {
     super(props)
-    var originalObject;
-    if (props.object !== undefined) {
-      originalObject = props.object;
-    } else {
-      originalObject = EMPTY_OBJECT;
-    }
+   
+
+    console.log("Props: ", props)
 
     this.state = {
-      values: JSON.parse(JSON.stringify(originalObject)),
-      errors: EMPTY_OBJECT
+      values: this.getOriginalObject()
     };
 
     this.addAttribute = this.addAttribute.bind(this);
@@ -52,7 +44,6 @@ class ObjectEditorContainer extends React.Component {
   addAttribute() {
     const nextState = produce(this.state, draftState => {
       draftState.values.attributes.push({name: "", type: "", defaultValue: "", description: ""});
-      draftState.errors.attributes.push({name: "", type: "", defaultValue: ""});
     })
     this.setState(nextState);
   }
@@ -61,7 +52,6 @@ class ObjectEditorContainer extends React.Component {
   changeName(event) {
     const nextState = produce(this.state, draftState => {
       draftState.values.name = event.target.value;
-      draftState.errors = validateObject(draftState.values);
     })
     this.setState(nextState);
   }
@@ -70,7 +60,6 @@ class ObjectEditorContainer extends React.Component {
   changeDescription(event) {
     const nextState = produce(this.state, draftState => {
       draftState.values.description = event.target.value;
-      draftState.errors = validateObject(draftState.values);
     })
     this.setState(nextState);
   }
@@ -80,14 +69,23 @@ class ObjectEditorContainer extends React.Component {
   changeAttribute(i, field, event) {
     const nextState = produce(this.state, draftState => {
       draftState.values.attributes[i][field] = event.target.value;
-      draftState.errors = validateObject(draftState.values);
     })
     this.setState(nextState);
   }
 
-  // onSave handles clicks to the save button.
+  // getOriginalObject returns the starting object definition for when the object editor first opens.
+  getOriginalObject() {
+    const objectId = this.props.match.params.objectId;
+    const object = this.props.allObjects[objectId];
+    if (object !== undefined) {
+      return JSON.parse(JSON.stringify(object));
+    } 
+    return JSON.parse(JSON.stringify(EMPTY_OBJECT));
+  }
+
+  // onSave handles clicks to the save button. If this action is triggered, then the object should be valid.
   onSave() {
-    console.log("Saved object: ", this.state.values);
+    this.props.onSave(this.state.values);
   }
 
   // onCancel handles clicks to the cancel button.
@@ -113,10 +111,13 @@ class ObjectEditorContainer extends React.Component {
       attribute: this.changeAttribute
     }
 
+    const [isValid, errors] = validateObject(this.state.values, this.props.allObjects);
+
     return (
       <ObjectEditor 
         values={this.state.values}
-        errors={this.state.errors} 
+        isValid={isValid}
+        errors={errors} 
         onChangeHandlers={onChangeHandlers}
         onSave={this.onSave}
         onCancel={this.onCancel}
@@ -127,4 +128,18 @@ class ObjectEditorContainer extends React.Component {
   }
 }
 
-export default ObjectEditorContainer;
+const mapStateToProps = (state, ownProps) => {
+  return {
+    allObjects: state.projects.defaultProject.objects
+  };
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    onSave: object => {
+      dispatch(putObjectSuccess("defaultProject", object))
+    }
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ObjectEditorContainer);

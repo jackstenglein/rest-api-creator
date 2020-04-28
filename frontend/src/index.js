@@ -14,6 +14,7 @@ const TEST_PROJECT = {
   description: "This is a sample project to test static UI. This project will eventually be dynamically pulled from Redux.",
   objects: {
     "user": {
+      id: "user",
       name: "User",
       description: "User represents the structure of an end user in the database.",
       attributes: [
@@ -21,17 +22,20 @@ const TEST_PROJECT = {
           name: "AttributeOne",
           type: "Integer",
           required: true,
-          description: "AttributeOne is an integer attribute that stores the first attribute of the user."
+          description: "AttributeOne is an integer attribute that stores the first attribute of the user.",
+          defaultValue: ""
         },
         {
           name: "AttributeTwo",
           type: "Text",
           required: false,
-          description: "AttributeTwo is a text attribute that stores the second attribute of the user."
+          description: "AttributeTwo is a text attribute that stores the second attribute of the user.",
+          defaultValue: ""
         }
       ]
     },
     "dog": {
+      id: "dog",
       name: "Dog",
       description: "Dog represents the structure of a dog object in the database.",
       attributes: [
@@ -39,13 +43,15 @@ const TEST_PROJECT = {
           name: "AttributeOne",
           type: "Text",
           required: true,
-          description: "AttributeOne is a text attribute that stores the first attribute of the dog. This attribute is required."
+          description: "AttributeOne is a text attribute that stores the first attribute of the dog. This attribute is required.",
+          defaultValue: "Asdf"
         },
         {
           name: "AttributeTwo",
           type: "Text",
           required: true,
-          description: "AttributeTwo is a text attribute that stores the second attribute of the dog."
+          description: "AttributeTwo is a text attribute that stores the second attribute of the dog.",
+          defaultValue: ""
         }
       ]
     }

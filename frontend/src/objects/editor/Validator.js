@@ -1,61 +1,95 @@
 
-// validateAttributes checks an array of attributes and returns an array of corresponding error objects.
+// validateAttributes checks an array of attributes and returns [true, errors] if the attributes are valid and
+// [false, errors] otherwise. If the attributes are valid, errors is an array of empty error objects.
 function validateAttributes(attributes) {
   const errors = [];
   let names = new Set([]);
+  var attributesOk = true;
   attributes.forEach(attribute => {
+    let [nameOk, nameError] = validateAttributeName(attribute.name);
+    let [typeOk, typeError] = validateAttributeType(attribute.type);
+    let [defaultOk, defaultError] = validateAttributeDefaultValue(attribute.type, attribute.defaultValue);
     const error = {
-      name: validateName(attribute.name), 
-      type: validateAttributeType(attribute.type),
-      defaultValue: validateAttributeDefaultValue(attribute.type, attribute.defaultValue)
+      name: nameError, 
+      type: typeError,
+      defaultValue: defaultError
     };
     if (names.has(attribute.name.toLowerCase())) {
       error.name = `Attribute ${attribute.name} already exists.`;
+      attributesOk = false;
     }
 
+    attributesOk = attributesOk && nameOk && typeOk && defaultOk;
     errors.push(error);
     names.add(attribute.name.toLowerCase());
   });
-  return errors;
+  return [attributesOk, errors];
 }
 
 // validateAttributeDefaultValue checks that the defaultValue of an attribute matches its type.
-// It returns either an empty string or an error message if applicable.
+// It returns [true, ""] if the defaultValue is valid and [false, errorMessage] otherwise.
 function validateAttributeDefaultValue(type, value) {
   if (type === 'Integer' && value.length > 0) {
     const defaultValue = Number(value.replace(/,/g, ''));
     if (Number.isNaN(defaultValue) || !Number.isInteger(defaultValue)) {
-      return "Please specify an integer.";
+      return [false, "Please specify an integer."];
     }
   }
-  return "";
+  return [true, ""];
 }
 
-// validateAttributeType returns the empty string if the attribute type is valid and an error message otherwise.
+// validateAttributeName returns [true, ""] if the name is valid and [false, errorMessage] otherwise.
+function validateAttributeName(name) {
+  if (name.length === 0) {
+    return [false, "Name is a required field."];
+  } else if (name.match(/[^a-z]/gi) !== null) {
+    return [false, "Only a-z and A-Z are allowed for this field."];
+  }
+  return [true, ""];
+}
+
+// validateAttributeType returns [true, ""] if the attribute type is valid and [false, errorMessage] otherwise.
 function validateAttributeType(type) {
   if (type.length === 0 || type === "Choose...") {
-    return "Type is a required field.";
+    return [false, "Type is a required field."];
   }
-  return "";
+  return [true, ""];
 }
 
-// validateName returns an empty string if the name is valid and an error message otherwise.
-function validateName(name) {
+// validateObjectName returns [true, ""] if the name is valid and [false, errorMessage] otherwise.
+function validateObjectName(name, originalId, allObjects) {
   if (name.length === 0) {
-    return "Name is a required field.";
+    return [false, "Name is a required field."];
   } else if (name.match(/[^a-z]/gi) !== null) {
-    return "Only a-z and A-Z are allowed for this field.";
+    return [false, "Only a-z and A-Z are allowed for this field."];
   }
-  return "";
+
+  const newId = name.toLowerCase();
+  if (newId === originalId) {
+    // In this case, we are editing an existing object and have not changed its name. Therefore, its id should still be unique.
+    return [true, ""]; 
+  }
+
+  const conflictingObject = allObjects[newId];
+  if (conflictingObject !== undefined) {
+    // In this case, we are creating a new object or editing an existing object and changed its name such that
+    // its id conflicts with another object.
+    return [false, `An object named '${conflictingObject.name}' already exists.`];
+  }
+
+  return [true, ""];
 }
 
-// validateObject checks the provided object and returns a corresponding object of error messages.
-function validateObject(object) {
+// validateObject checks the provided object and returns a corresponding object of error messages. It returns
+// [true, errors] if the object is valid and [false, errors] otherwise.
+function validateObject(object, allObjects) {
+  let [nameOk, nameError] = validateObjectName(object.name, object.id, allObjects);
+  let [attributesOk, attributeErrors] = validateAttributes(object.attributes);
   const errors = {
-    name: validateName(object.name), 
-    attributes: validateAttributes(object.attributes)
+    name: nameError, 
+    attributes: attributeErrors
   };
-  return errors;
+  return [nameOk && attributesOk, errors];
 }
 
 export default validateObject;

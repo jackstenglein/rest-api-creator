@@ -1,6 +1,5 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import ObjectEditor from './editor/ObjectEditor.js';
 import ObjectEditorContainer from './editor/ObjectEditorContainer.js';
 import ObjectListContainer from './ObjectListContainer.js';
 
@@ -9,64 +8,9 @@ const ObjectLayout = props => (
     <Switch>
       <Route path={props.match.path} exact component={ObjectListContainer} />
       <Route path={`${props.match.path}create`} component={ObjectEditorContainer} />
-      <Route path={`${props.match.path}:objectId/edit`} render={(props) => 
-        <ObjectEditor {...props} values={EDITOR_VALUES} errors={EDITOR_ERRORS} path={EDITOR_PATH}/>} 
-      />
-      
+      <Route path={`${props.match.path}:objectId/edit`} component={ObjectEditorContainer} />
     </Switch>
   </div>
 )
-
-
-const EDITOR_PATH = [
-  {
-    name: "Default Project",
-    link: "/app",
-    active: false
-  },
-  {
-    name: "Objects",
-    link: "/app/objects",
-    active: false
-  }, 
-  {
-    name: "User",
-    link: "/app/objects/5",
-    active: false
-  }, 
-  {
-    name: "Edit",
-    link: "/app/objects/5/edit",
-    active: true
-  }
-]
-
-const EDITOR_VALUES = {
-  name: "User",
-  description: "User represents the structure of an end user in the database.",
-  attributes: [
-    {
-      name: "AttributeOne",
-      type: "Integer",
-      defaultValue: "5",
-    },
-    {
-      name: "",
-      type: "",
-      defaultValue: "",
-    }
-  ]
-}
-
-const EDITOR_ERRORS = {
-  name: "Object with this name already exists.",
-  attributes: [
-    {},
-    {
-      name: "Name is required",
-      type: "Type is required"
-    }
-  ]
-}
 
 export default ObjectLayout;

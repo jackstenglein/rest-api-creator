@@ -12,7 +12,7 @@ const ObjectList = props => (
   <ListGroup variant="flush">
     {
       Object.entries(props.objects).map(([id, object]) => 
-        <NavLink to={`/app/objects/${id}/edit`} className={listItemClassName}>{object.name}</NavLink>
+        <NavLink key={id} to={`/app/objects/${id}/edit`} className={listItemClassName}>{object.name}</NavLink>
       )
     }
   </ListGroup>

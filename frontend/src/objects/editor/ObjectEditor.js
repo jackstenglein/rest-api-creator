@@ -13,7 +13,7 @@ const EditorToolbar = props => (
     </Col>
     <Col xs="auto">
       <ButtonToolbar>
-        <Button className="mr-2" onClick={props.onSave}>Save</Button>
+        <Button className="mr-2" onClick={props.onSave} disabled={!props.isValid}>Save</Button>
         <Button variant="danger" onClick={props.onCancel}>Cancel</Button>
       </ButtonToolbar>
     </Col>
@@ -22,7 +22,7 @@ const EditorToolbar = props => (
 
 const ObjectEditor = props => (
   <div>
-    <EditorToolbar onSave={props.onSave} onCancel={props.onCancel}/>
+    <EditorToolbar isValid={props.isValid} onSave={props.onSave} onCancel={props.onCancel}/>
     <br />
     <ObjectInfoEditor {...props}/>
     <ObjectAttributeEditor 

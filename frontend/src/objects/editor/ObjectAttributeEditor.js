@@ -75,7 +75,7 @@ const AttributeRow = props => (
             placeholder="Enter name"
             value={props.values.name} 
             onChange={props.onChange.bind(null, props.index, "name")}
-            error={props.errors.name}
+            error={props.errors ? props.errors.name : undefined}
           />
 
           <AttributeInput 
@@ -84,7 +84,7 @@ const AttributeRow = props => (
             as="select"
             value={props.values.type}
             onChange={props.onChange.bind(null, props.index, "type")}
-            error={props.errors.type}
+            error={props.errors ? props.errors.type : undefined}
           >
             <option>Choose...</option>
             <option>Text</option>
@@ -97,7 +97,7 @@ const AttributeRow = props => (
             placeholder="Optional value"
             value={props.values.defaultValue}
             onChange={props.onChange.bind(null, props.index, "defaultValue")}
-            error={props.errors.defaultValue}
+            error={props.errors ? props.errors.defaultValue : undefined}
           />
         </Form.Row>
 
@@ -111,7 +111,7 @@ const AttributeRow = props => (
         />
       </Col>
       <Col xs="1" className="d-flex justify-content-center">
-        <button type="button" class="close text-danger opacity-5" aria-label="Close" onClick={props.remove.bind(null, props.index)}>
+        <button type="button" className="close text-danger opacity-5" aria-label="Close" onClick={props.remove.bind(null, props.index)}>
           <span aria-hidden="true">&times;</span>
         </button>
       </Col>
