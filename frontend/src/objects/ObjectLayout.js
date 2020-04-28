@@ -4,13 +4,11 @@ import ObjectEditorContainer from './editor/ObjectEditorContainer.js';
 import ObjectListContainer from './ObjectListContainer.js';
 
 const ObjectLayout = props => (
-  <div className="object-layout">
-    <Switch>
-      <Route path={props.match.path} exact component={ObjectListContainer} />
-      <Route path={`${props.match.path}create`} component={ObjectEditorContainer} />
-      <Route path={`${props.match.path}:objectId/edit`} component={ObjectEditorContainer} />
-    </Switch>
-  </div>
+  <Switch>
+    <Route path={props.match.path} exact component={ObjectListContainer} />
+    <Route path={`${props.match.path}create`} component={ObjectEditorContainer} />
+    <Route path={`${props.match.path}:objectId/edit`} component={ObjectEditorContainer} />
+  </Switch>
 )
 
 export default ObjectLayout;

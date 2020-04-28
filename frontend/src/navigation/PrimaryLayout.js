@@ -24,8 +24,8 @@ const PrimaryLayout = () => (
           <Col xs="auto" className="border-right p-0 mr-1">
             <ProjectNav />
           </Col>
-          <Col>
-            <Route path="/app/" exact component={ProjectDetails} />
+          <Col className="mt-2">
+            <Route path="/app/details" exact component={ProjectDetails} />
             <Route path="/app/objects/" component={ObjectLayout} />
             <Route path="/app/endpoints/" component={Endpoints} />
             <Route path="/app/documentation" component={DocumentationContainer} />
