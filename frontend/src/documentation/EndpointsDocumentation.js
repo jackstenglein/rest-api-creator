@@ -115,8 +115,8 @@ const EndpointsDocumentation = props => (
     <h3>Endpoints</h3>
     <hr />
     {
-      props.objects.map(object => (
-        <div key={object.name}>
+      Object.entries(props.objects).map(([id, object]) => (
+        <div key={id}>
           <CreateDocumentation object={object} />
           <ReadDocumentation object={object} />
           <UpdateDocumentation object={object} />

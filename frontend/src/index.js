@@ -12,8 +12,8 @@ const TEST_PROJECT = {
   id: "defaultProject",
   name: "Default Project",
   description: "This is a sample project to test static UI. This project will eventually be dynamically pulled from Redux.",
-  objects: [
-    {
+  objects: {
+    "user": {
       name: "User",
       description: "User represents the structure of an end user in the database.",
       attributes: [
@@ -31,7 +31,7 @@ const TEST_PROJECT = {
         }
       ]
     },
-    {
+    "dog": {
       name: "Dog",
       description: "Dog represents the structure of a dog object in the database.",
       attributes: [
@@ -49,11 +49,11 @@ const TEST_PROJECT = {
         }
       ]
     }
-  ]
+  }
 }
 
 store.dispatch(putProjectSuccess(TEST_PROJECT))
-store.dispatch(putObjectSuccess("defaultProject", {id: 5, name: "ObjectName", description: "Test object", attributes: []}))
+store.dispatch(putObjectSuccess("defaultProject", {id: "objectname", name: "ObjectName", description: "Test object", attributes: []}))
 
 ReactDOM.render(
   <React.StrictMode>

@@ -49,8 +49,8 @@ const ObjectsDocumentation = props => (
     <h3>Objects</h3>
     <hr />
     {
-      props.objects.map(object => (
-        <ObjectDocumentation key={object.name} object={object} />
+      Object.entries(props.objects).map(([id, object]) => (
+        <ObjectDocumentation key={id} object={object} />
       ))
     }
   </div>
