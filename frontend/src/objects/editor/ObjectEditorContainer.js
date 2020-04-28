@@ -128,7 +128,7 @@ class ObjectEditorContainer extends React.Component {
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = state => {
   return {
     allObjects: state.projects.defaultProject.objects
   };
