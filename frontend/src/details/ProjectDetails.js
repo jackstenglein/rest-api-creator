@@ -8,7 +8,7 @@ const ProjectDetails = props => (
     <h2>{props.project.name}</h2>
     <p>{props.project.description}
     </p>
-    <Button variant="primary" onClick={console.log("Download clicked")}>Download Code</Button>
+    <Button variant="primary" onClick={() => console.log("Download clicked")}>Download Code</Button>
   </div>
 )
 

@@ -4,6 +4,8 @@ import { putObjectSuccess } from '../../redux/modules/projects';
 import ObjectEditor from './ObjectEditor.js';
 import produce from 'immer';
 import validateObject from './Validator.js';
+import deepEqual from 'deep-equal';
+import { Prompt } from 'react-router-dom';
 
 const EMPTY_OBJECT = {
   name: "",
@@ -112,18 +114,23 @@ class ObjectEditorContainer extends React.Component {
     }
 
     const [isValid, errors] = validateObject(this.state.values, this.props.allObjects);
+    const cancelPrompt = !deepEqual(this.state.values, this.getOriginalObject())
+    console.log("Cancel prompt: ", cancelPrompt)
 
     return (
-      <ObjectEditor 
-        values={this.state.values}
-        isValid={isValid}
-        errors={errors} 
-        onChangeHandlers={onChangeHandlers}
-        onSave={this.onSave}
-        onCancel={this.onCancel}
-        removeAttribute={this.removeAttribute}
-        addAttribute={this.addAttribute}
-      />
+      <>
+        <Prompt when={cancelPrompt} message="Are you sure you want to discard your changes?"/> 
+        <ObjectEditor 
+          values={this.state.values}
+          isValid={isValid}
+          errors={errors} 
+          onChangeHandlers={onChangeHandlers}
+          onSave={this.onSave}
+          onCancel={this.onCancel}
+          removeAttribute={this.removeAttribute}
+          addAttribute={this.addAttribute}
+        />
+      </>
     )
   }
 }

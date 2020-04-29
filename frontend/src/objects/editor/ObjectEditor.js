@@ -5,6 +5,7 @@ import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
+import { NavLink } from 'react-router-dom';
 
 const EditorToolbar = props => (
   <Row className="align-items-center justify-content-between">
@@ -14,7 +15,7 @@ const EditorToolbar = props => (
     <Col xs="auto">
       <ButtonToolbar>
         <Button className="mr-2" onClick={props.onSave} disabled={!props.isValid}>Save</Button>
-        <Button variant="danger" onClick={props.onCancel}>Cancel</Button>
+        <NavLink to="/app/objects"><Button variant="danger">Cancel</Button></NavLink>
       </ButtonToolbar>
     </Col>
   </Row>
