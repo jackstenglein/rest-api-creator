@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import PrimaryLayout from './PrimaryLayout.js';
 import './App.css';
+import LoginContainer from '../portal/LoginContainer.js';
 import SignupContainer from '../portal/SignupContainer.js';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
       <Switch>
         {/* <Route path="/auth" component="" /> */}
         <Route path="/" exact component={SignupContainer} />
+        <Route path="/login" component={LoginContainer} />
         <Route path="/app" component={PrimaryLayout} />
       </Switch>
     </BrowserRouter>
