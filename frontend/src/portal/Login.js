@@ -1,20 +1,12 @@
 import React from 'react';
-import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import { Link } from 'react-router-dom';
+import ErrorAlert from './ErrorAlert.js';
 
-const ErrorAlert = props => {
-  if (props.error === undefined || props.error.length === 0) {
-    return null;
-  }
-  return (
-    <Alert variant="danger">{props.error}</Alert>
-  )
-}
 
 const Input = props => (
   <Form.Group as={Row}>

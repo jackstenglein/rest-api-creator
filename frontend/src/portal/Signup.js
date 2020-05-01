@@ -5,6 +5,7 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import { Link } from 'react-router-dom';
+import ErrorAlert from './ErrorAlert.js';
 
 const Input = props => (
   <Form.Group as={Row}>
@@ -25,6 +26,7 @@ const Input = props => (
 const Signup = props => (
   <Container className="mt-2">
     <h2>Signup</h2>
+    <ErrorAlert error={props.submitError}/>
     <Input name="Email" placeholder="email@example.com" value={props.email} onChange={props.changeEmail} error={props.errors.email}/>
     <Input name="Password" type="password" placeholder="Password" value={props.password} onChange={props.changePassword} error={props.errors.password}/>
     <Input name="Confirm Password" type="password" placeholder="Password" value={props.confirmPassword} onChange={props.changeConfirmPassword} 
