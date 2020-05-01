@@ -3,17 +3,23 @@
 import produce from "immer"
 
 // Actions
-const PUT_PROJECT_SUCCESS = "projects/putProjectSuccess";
+const FETCH_PROJECT_SUCCESS = "projects/fetchProjectSuccess";
 const PUT_OBJECT_SUCCESS = "objects/putObjectSuccess";
 
 
 // Action creators
-export function putProjectSuccess(project) {
-  return {type: PUT_PROJECT_SUCCESS, payload: project};
+export function fetchProjectSuccess(project) {
+  return {type: FETCH_PROJECT_SUCCESS, payload: project};
 }
 
 export function putObjectSuccess(projectId, object) {
-  return {type: PUT_OBJECT_SUCCESS, payload: {projectId: projectId, object: object}};
+  return {
+    type: PUT_OBJECT_SUCCESS, 
+    payload: {
+      projectId: projectId, 
+      object: {...object, id: object.name.toLowerCase()}
+    }
+  };
 }
 
 // Initial state
@@ -22,8 +28,9 @@ const initialState = {}
 // Full projects reducer -- draft = projects = {pid1: {...}, pid2: {...}, ...}
 const reducer = produce((draft, action = {}) => {
   switch (action.type) {
-    case PUT_PROJECT_SUCCESS:
+    case FETCH_PROJECT_SUCCESS:
       draft[action.payload.id] = action.payload;
+      draft[action.payload.id].fetched = true;
       break;
     case PUT_OBJECT_SUCCESS:
       const object = action.payload.object;

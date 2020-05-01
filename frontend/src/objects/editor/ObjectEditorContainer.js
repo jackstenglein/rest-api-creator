@@ -5,7 +5,8 @@ import ObjectEditor from './ObjectEditor.js';
 import produce from 'immer';
 import validateObject from './Validator.js';
 import deepEqual from 'deep-equal';
-import { Prompt } from 'react-router-dom';
+import { Prompt, Redirect } from 'react-router-dom';
+import { putObject } from '../../api/api.js';
 
 const EMPTY_OBJECT = {
   name: "",
@@ -37,7 +38,6 @@ class ObjectEditorContainer extends React.Component {
     this.changeDescription = this.changeDescription.bind(this);
     this.changeAttribute = this.changeAttribute.bind(this);
     this.onSave = this.onSave.bind(this);
-    this.onCancel = this.onCancel.bind(this);
     this.removeAttribute = this.removeAttribute.bind(this);
   }
 
@@ -86,13 +86,29 @@ class ObjectEditorContainer extends React.Component {
   }
 
   // onSave handles clicks to the save button. If this action is triggered, then the object should be valid.
-  onSave() {
-    this.props.onSave(this.state.values);
-  }
+  async onSave() {
+    // Make the request
+    console.log("Making putObject request")
+    const response = await putObject("defaultProject", this.state.values);
+    console.log("Got response: ", response);
 
-  // onCancel handles clicks to the cancel button.
-  onCancel() {
-    console.log("Cancel");
+    // Make changes to state based on response
+    var apiError = "";
+    var saved = false;
+    if (response === undefined) {
+      apiError = "Failed to make network request.";
+    } else if (response.error !== undefined) {
+      apiError = response.error;
+    } else {
+      saved = true;
+      this.props.onSave(this.state.values);
+    }
+
+    const nextState = produce(this.state, draftState => {
+      draftState.apiError = apiError;
+      draftState.saved = saved;
+    });
+    this.setState(nextState);
   }
 
   // removeAttribute removes the attribute at the given index from the state's values.attributes array.
@@ -100,13 +116,16 @@ class ObjectEditorContainer extends React.Component {
   removeAttribute(i) {
     const nextState = produce(this.state, draftState => {
       draftState.values.attributes.splice(i, 1);
-      draftState.errors.attributes.splice(i, 1);
     })
     this.setState(nextState);
   }
 
   // render returns the JSX for the ObjectEditor.
   render() {
+    if (this.state.saved) {
+      return <Redirect to="/app/objects"/>
+    }
+
     const onChangeHandlers = {
       name: this.changeName,
       description: this.changeDescription,
@@ -115,18 +134,17 @@ class ObjectEditorContainer extends React.Component {
 
     const [isValid, errors] = validateObject(this.state.values, this.props.allObjects);
     const cancelPrompt = !deepEqual(this.state.values, this.getOriginalObject())
-    console.log("Cancel prompt: ", cancelPrompt)
 
     return (
       <>
         <Prompt when={cancelPrompt} message="Are you sure you want to discard your changes?"/> 
         <ObjectEditor 
           values={this.state.values}
+          apiError={this.state.apiError}
           isValid={isValid}
           errors={errors} 
           onChangeHandlers={onChangeHandlers}
           onSave={this.onSave}
-          onCancel={this.onCancel}
           removeAttribute={this.removeAttribute}
           addAttribute={this.addAttribute}
         />

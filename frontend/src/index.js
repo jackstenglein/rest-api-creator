@@ -6,7 +6,7 @@ import App from './navigation/App';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './redux/store';
-import { putObjectSuccess, putProjectSuccess } from './redux/modules/projects';
+import { putObjectSuccess, fetchProjectSuccess } from './redux/modules/projects';
 
 const TEST_PROJECT = {
   id: "defaultProject",
@@ -62,7 +62,7 @@ const TEST_PROJECT = {
   }
 }
 
-store.dispatch(putProjectSuccess(TEST_PROJECT))
+store.dispatch(fetchProjectSuccess(TEST_PROJECT))
 store.dispatch(putObjectSuccess("defaultProject", {id: "objectname", name: "ObjectName", description: "Test object", attributes: []}))
 
 ReactDOM.render(
