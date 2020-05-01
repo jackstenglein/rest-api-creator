@@ -29,8 +29,8 @@ class SignupContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: "test",
-      password: "asf",
+      email: "",
+      password: "",
       confirmPassword: ""
     };
 
