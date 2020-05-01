@@ -39,5 +39,5 @@ func HandleLogout(request events.APIGatewayProxyRequest) (events.APIGatewayProxy
 	if err != nil {
 		fmt.Println(errors.StackTrace(errors.Wrap(err, "Failed to marshal Logout response")))
 	}
-	return events.APIGatewayProxyResponse{Body: string(json), StatusCode: status}, err
+	return events.APIGatewayProxyResponse{Body: string(json), Headers: map[string]string{"Access-Control-Allow-Origin": "http://localhost:3000", "Access-Control-Allow-Credentials": "true"}, StatusCode: status}, err
 }

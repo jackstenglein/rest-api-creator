@@ -30,7 +30,11 @@ func handlerRequest(cookie string) events.APIGatewayProxyRequest {
 
 func handlerResponse(err string, status int) events.APIGatewayProxyResponse {
 	json, _ := json.Marshal(&logoutResponse{Error: err})
-	return events.APIGatewayProxyResponse{Body: string(json), StatusCode: status}
+	return events.APIGatewayProxyResponse{
+		Body:       string(json),
+		Headers:    map[string]string{"Access-Control-Allow-Origin": "http://localhost:3000", "Access-Control-Allow-Credentials": "true"},
+		StatusCode: status,
+	}
 }
 
 var handleLogoutTests = []struct {
@@ -54,7 +58,7 @@ var handleLogoutTests = []struct {
 	},
 	{
 		name:         "SuccessfulInvocation",
-		request:      handlerRequest("session=cookievalue;HttpOnly;SameSite=strict;Secure"),
+		request:      handlerRequest("session=cookievalue"),
 		logoutMock:   logoutMock("cookievalue", nil),
 		wantResponse: handlerResponse("", 200),
 	},

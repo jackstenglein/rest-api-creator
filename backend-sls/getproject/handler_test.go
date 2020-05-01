@@ -33,7 +33,11 @@ func handlerRequest(projectID string, cookie string) events.APIGatewayProxyReque
 
 func handlerResponse(project *dao.Project, err string, status int) events.APIGatewayProxyResponse {
 	json, _ := json.Marshal(&getProjectResponse{Project: project, Error: err})
-	return events.APIGatewayProxyResponse{Body: string(json), StatusCode: status}
+	return events.APIGatewayProxyResponse{
+		Body:       string(json),
+		Headers:    map[string]string{"Access-Control-Allow-Origin": "http://localhost:3000", "Access-Control-Allow-Credentials": "true"},
+		StatusCode: status,
+	}
 }
 
 var handlerTests = []struct {
@@ -54,7 +58,7 @@ var handlerTests = []struct {
 }{
 	{
 		name:          "GetProjectError",
-		request:       handlerRequest("default", "session=cookie;HttpOnly;SameSite=strict;Secure"),
+		request:       handlerRequest("default", "session=cookie"),
 		mockProjectID: "default",
 		mockCookie:    "cookie",
 		mockErr:       errors.NewServer("Failed to get project"),
@@ -62,7 +66,7 @@ var handlerTests = []struct {
 	},
 	{
 		name:          "SucccessfulInvocation",
-		request:       handlerRequest("default", "session=cookie;HttpOnly;SameSite=strict;Secure"),
+		request:       handlerRequest("default", "session=cookie"),
 		mockProjectID: "default",
 		mockCookie:    "cookie",
 		mockProject:   &dao.Project{ID: "default", Name: "ProjectName"},

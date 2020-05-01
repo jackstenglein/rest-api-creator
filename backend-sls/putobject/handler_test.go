@@ -34,7 +34,11 @@ func handlerRequest(cookie string, projectID string, object *dao.Object) events.
 
 func handlerResponse(id string, err string, status int) events.APIGatewayProxyResponse {
 	json, _ := json.Marshal(&putObjectResponse{ID: id, Error: err})
-	return events.APIGatewayProxyResponse{Body: string(json), StatusCode: status}
+	return events.APIGatewayProxyResponse{
+		Body:       string(json),
+		Headers:    map[string]string{"Access-Control-Allow-Origin": "http://localhost:3000", "Access-Control-Allow-Credentials": "true"},
+		StatusCode: status,
+	}
 }
 
 var handlePutObjectTests = []struct {
@@ -52,13 +56,13 @@ var handlePutObjectTests = []struct {
 }{
 	{
 		name:          "PutObjectFailure",
-		request:       handlerRequest("session=cookievalue;HttpOnly;SameSite=strict;Secure", "projectId", nil),
+		request:       handlerRequest("session=cookievalue", "projectId", nil),
 		putObjectMock: putObjectMock("cookievalue", "projectId", nil, "", errors.NewServer("Failed database call")),
 		wantResponse:  handlerResponse("", "Failed database call", 500),
 	},
 	{
 		name:          "SuccessfulInvocation",
-		request:       handlerRequest("session=cookievalue;HttpOnly;SameSite=strict;Secure", "projectId", &dao.Object{ID: "objectId", Name: "objectName", Description: "desc"}),
+		request:       handlerRequest("session=cookievalue", "projectId", &dao.Object{ID: "objectId", Name: "objectName", Description: "desc"}),
 		putObjectMock: putObjectMock("cookievalue", "projectId", &dao.Object{ID: "objectId", Name: "objectName", Description: "desc"}, "objectId", nil),
 		wantResponse:  handlerResponse("objectId", "", 200),
 	},

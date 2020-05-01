@@ -78,6 +78,15 @@ functions:
       - http:
           path: projects/{pid}
           method: get
+          cors:
+            origin: "http://localhost:3000"
+            headers:
+              - "Content-Type"
+              - "X-Amz-Date"
+              - "Authorization"
+              - "X-Api-Key" 
+              - "X-Amz-Security-Token"
+            allowCredentials: true
           request:
             parameters:
               paths:
@@ -88,24 +97,60 @@ functions:
       - http:
           path: login
           method: put
+          cors:
+            origin: "http://localhost:3000"
+            headers:
+              - "Content-Type"
+              - "X-Amz-Date"
+              - "Authorization"
+              - "X-Api-Key" 
+              - "X-Amz-Security-Token"
+            allowCredentials: true
   logout:
     handler: logout.HandleLogout
     events:
       - http:
           path: logout
           method: put
+          cors:
+            origin: "http://localhost:3000"
+            headers:
+              - "Content-Type"
+              - "X-Amz-Date"
+              - "Authorization"
+              - "X-Api-Key" 
+              - "X-Amz-Security-Token"
+            allowCredentials: true
   putObject:
     handler: putobject.HandlePutObject
     events:
       - http:
           path: projects/{pid}/objects
           method: put
+          cors: 
+            origin: "http://localhost:3000"
+            headers:
+              - "Content-Type"
+              - "X-Amz-Date"
+              - "Authorization"
+              - "X-Api-Key" 
+              - "X-Amz-Security-Token"
+            allowCredentials: true
   signup:
     handler: portal.HandleSignupRequest
     events:
       - http:
           path: signup
           method: post
+          cors:
+            origin: "http://localhost:3000"
+            headers:
+              - "Content-Type"
+              - "X-Amz-Date"
+              - "Authorization"
+              - "X-Api-Key" 
+              - "X-Amz-Security-Token"
+            allowCredentials: true
   
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

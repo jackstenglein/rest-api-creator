@@ -77,7 +77,9 @@ func handleRequest(request events.APIGatewayProxyRequest, actionFunc portalFunc)
 	errString, status := errors.UserDetails(err)
 	fmt.Println(errors.StackTrace(err))
 	var headers = map[string]string{
-		"Set-Cookie": fmt.Sprintf("session=%s;HttpOnly;SameSite=strict;Secure", cookie),
+		"Set-Cookie":                       fmt.Sprintf("session=%s;HttpOnly;", cookie),
+		"Access-Control-Allow-Origin":      "http://localhost:3000",
+		"Access-Control-Allow-Credentials": "true",
 	}
 	json, err := json.Marshal(&portalResponse{Error: errString})
 	if err != nil {
