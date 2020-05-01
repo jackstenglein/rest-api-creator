@@ -8,7 +8,7 @@ import Row from 'react-bootstrap/Row';
 import DocumentationContainer from '../documentation/DocumentationContainer.js';
 import Endpoints from '../endpoints/Endpoints.js';
 import ProjectDetails from '../details/ProjectDetails.js';
-import { Redirect } from 'react-router-dom';
+import { Switch, Redirect } from 'react-router-dom';
 
 const PrimaryLayout = () => (
   <div className="primary-layout">
@@ -19,11 +19,13 @@ const PrimaryLayout = () => (
             <ProjectNav />
           </Col>
           <Col className="mt-2">
-            <Route path="/app/details" exact component={ProjectDetails} />
-            <Route path="/app/objects/" component={ObjectLayout} />
-            <Route path="/app/endpoints/" component={Endpoints} />
-            <Route path="/app/documentation" component={DocumentationContainer} />
-            <Redirect to="/app/details" />
+            <Switch>
+              <Route path="/app/details" exact component={ProjectDetails} />
+              <Route path="/app/objects/" component={ObjectLayout} />
+              <Route path="/app/endpoints/" component={Endpoints} />
+              <Route path="/app/documentation" component={DocumentationContainer} />
+              <Redirect to="/app/details" />
+            </Switch>
           </Col>
         </Row>
       </Container>
