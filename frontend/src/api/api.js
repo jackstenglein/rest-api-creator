@@ -38,7 +38,7 @@ export async function putObject(projectId, object) {
 
 export async function signup(email, password) {
   try {
-    return await api.post("signup", {json: {email, email, password: password}}).json()
+    return await api.post("signup", {json: {email: email, password: password}}).json()
   } catch (err) {
     if (err.response !== undefined) {
       return await err.response.json();
