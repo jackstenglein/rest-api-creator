@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"strings"
 
 	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
@@ -59,15 +60,15 @@ func GenerateCookie(email string, token string) (cookie string, err error) {
 
 // ExtractCookie extracts the actual session cookie value from a `Cookie` header value. The header
 // must be in the following format:
-//		session=<cookie value>;HttpOnly;SameSite=struct;Secure
+//		session=<cookie value>
 // If the header value is not in the correct format, the empty string will be returned.
 func ExtractCookie(cookieHeader string) string {
+	fmt.Println("Extracing cookie from header:", cookieHeader)
 	startIndex := strings.Index(cookieHeader, "session=")
-	stopIndex := strings.Index(cookieHeader, ";HttpOnly;SameSite=strict;Secure")
-	if startIndex != 0 || stopIndex < len("session=") {
+	if startIndex != 0 {
 		return ""
 	}
-	return cookieHeader[len("session="):stopIndex]
+	return cookieHeader[len("session="):]
 }
 
 // VerifyCookie checks that cookie is in the correct format, its mac is correct, and its

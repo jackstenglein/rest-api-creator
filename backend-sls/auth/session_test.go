@@ -89,23 +89,18 @@ var extractCookieTests = []struct {
 		wantCookie: "",
 	},
 	{
-		name:       "MissingFlags",
-		header:     "session=cookievalue",
-		wantCookie: "",
-	},
-	{
-		name:       "FlagsBeforeSession",
-		header:     ";HttpOnly;SameSite=strict;Secure;session=cookievalue",
+		name:       "SessionNotFirst",
+		header:     "Asdfsession=cookievalue",
 		wantCookie: "",
 	},
 	{
 		name:       "NoSessionValue",
-		header:     "session=;HttpOnly;SameSite=strict;Secure",
+		header:     "session=",
 		wantCookie: "",
 	},
 	{
 		name:       "CorrectHeader",
-		header:     "session=cookievalue;HttpOnly;SameSite=strict;Secure",
+		header:     "session=cookievalue",
 		wantCookie: "cookievalue",
 	},
 }
