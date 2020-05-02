@@ -5,10 +5,11 @@ import ProjectNav from './ProjectNav.js';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-import DocumentationContainer from '../documentation/DocumentationContainer.js';
+import Documentation from '../documentation/Documentation.js';
 import Endpoints from '../endpoints/Endpoints.js';
 import ProjectDetails from '../details/ProjectDetails.js';
 import { Switch, Redirect } from 'react-router-dom';
+import ProjectRoute from './ProjectRoute.js';
 
 const PrimaryLayout = () => (
   <div className="primary-layout">
@@ -23,7 +24,7 @@ const PrimaryLayout = () => (
               <Route path="/app/details" exact component={ProjectDetails} />
               <Route path="/app/objects/" component={ObjectLayout} />
               <Route path="/app/endpoints/" component={Endpoints} />
-              <Route path="/app/documentation" component={DocumentationContainer} />
+              <ProjectRoute path="/app/documentation" component={Documentation} />
               <Redirect to="/app/details" />
             </Switch>
           </Col>
