@@ -2,6 +2,8 @@ import React from 'react';
 import Table from 'react-bootstrap/Table';
 import Required from './Required.js';
 
+const NO_ENDPOINTS_MESSAGE = "This project doesn't have any endpoints yet.";
+
 // ParameterRow returns the JSX for a single row of a parameter table. props should have `name`, `required`,
 // `location` and `description` fields.
 const ParameterRow = props => (
@@ -110,21 +112,29 @@ const DeleteDocumentation = props => {
 
 // EndpointsDocumentation returns the JSX for the documentation of all endpoints. props should have an `objects` field,
 // containing a list of object definition.
-const EndpointsDocumentation = props => (
-  <div>
-    <h3>Endpoints</h3>
-    <hr />
-    {
-      Object.entries(props.objects).map(([id, object]) => (
-        <div key={id}>
-          <CreateDocumentation object={object} />
-          <ReadDocumentation object={object} />
-          <UpdateDocumentation object={object} />
-          <DeleteDocumentation object={object} />
-        </div>
-      ))
-    }
-  </div>
-)
+const EndpointsDocumentation = props => {
+  if (props.objects === undefined) {
+    return null;
+  }
+
+  return (
+    <div>
+      <h3 className="mb-0">Endpoints</h3>
+      <hr className="mt-1"/>
+      {
+        Object.entries(props.objects).length === 0 
+          ? <p>{NO_ENDPOINTS_MESSAGE}</p> 
+          : Object.entries(props.objects).map(([id, object]) => (
+            <div key={id}>
+              <CreateDocumentation object={object} />
+              <ReadDocumentation object={object} />
+              <UpdateDocumentation object={object} />
+              <DeleteDocumentation object={object} />
+            </div>
+          ))
+      }
+    </div>
+  )
+}
 
 export default EndpointsDocumentation;

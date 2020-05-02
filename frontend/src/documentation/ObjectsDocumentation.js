@@ -2,6 +2,8 @@ import React from 'react';
 import Table from 'react-bootstrap/Table';
 import Required from './Required.js';
 
+const NO_OBJECTS_MESSAGE = "This project doesn't have any objects yet.";
+
 // AttributeDocumentation returns the JSX for the documentation of a single attribute. props should have an
 // `attributes` field, containing a dictionary with the attribute definition. AttributeDocumentation returns
 // a <tr> element, so it should be embedded into a table.
@@ -44,16 +46,24 @@ const ObjectDocumentation = props => (
 
 // ObjectsDocumentation returns the JSX for the documentation of all objects. props should have an
 // `objects` field, containing an array with the object definitions.
-const ObjectsDocumentation = props => (
-  <div>
-    <h3>Objects</h3>
-    <hr />
-    {
-      Object.entries(props.objects).map(([id, object]) => (
-        <ObjectDocumentation key={id} object={object} />
-      ))
-    }
-  </div>
-)
+const ObjectsDocumentation = props => {
+  if (props.objects === undefined) {
+    return null;
+  }
+
+  return (
+    <div>
+      <h3 className="mb-0">Objects</h3>
+      <hr className="mt-1"/>
+      {
+        Object.entries(props.objects).length === 0 
+          ? <p>{NO_OBJECTS_MESSAGE}</p> 
+          : Object.entries(props.objects).map(([id, object]) => (
+            <ObjectDocumentation key={id} object={object} />
+          ))
+      }
+    </div>
+  )
+}
 
 export default ObjectsDocumentation;
