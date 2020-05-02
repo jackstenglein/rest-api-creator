@@ -62,8 +62,8 @@ const TEST_PROJECT = {
   }
 }
 
-store.dispatch(fetchProjectSuccess(TEST_PROJECT))
-store.dispatch(putObjectSuccess("defaultProject", {id: "objectname", name: "ObjectName", description: "Test object", attributes: []}))
+// store.dispatch(fetchProjectSuccess(TEST_PROJECT))
+// store.dispatch(putObjectSuccess("defaultProject", {id: "objectname", name: "ObjectName", description: "Test object", attributes: []}))
 
 ReactDOM.render(
   <React.StrictMode>

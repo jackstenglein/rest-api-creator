@@ -1,15 +1,25 @@
 // projects.js contains the actions, action creators and reducer for projects.
 
 import produce from "immer"
+import * as network from './network.js';
 
 // Actions
-const FETCH_PROJECT_SUCCESS = "projects/fetchProjectSuccess";
+const FETCH_PROJECT_REQUEST = "projects/fetchProjectRequest";
+const FETCH_PROJECT_RESPONSE = "projects/fetchProjectResponse";
+const FETCH_PROJECT_FAILURE = "projects/fetchProjectFailure";
 const PUT_OBJECT_SUCCESS = "objects/putObjectSuccess";
 
-
 // Action creators
-export function fetchProjectSuccess(project) {
-  return {type: FETCH_PROJECT_SUCCESS, payload: project};
+export function fetchProjectRequest(projectId) {
+  return {type: FETCH_PROJECT_REQUEST, payload: projectId};
+}
+
+export function fetchProjectResponse(projectId, response) {
+  return {type: FETCH_PROJECT_RESPONSE, payload: {id: projectId, response: response}};
+}
+
+export function fetchProjectFailure(projectId, error) {
+  return {type: FETCH_PROJECT_FAILURE, payload: {id: projectId, error: error}};
 }
 
 export function putObjectSuccess(projectId, object) {
@@ -28,9 +38,21 @@ const initialState = {}
 // Full projects reducer -- draft = projects = {pid1: {...}, pid2: {...}, ...}
 const reducer = produce((draft, action = {}) => {
   switch (action.type) {
-    case FETCH_PROJECT_SUCCESS:
-      draft[action.payload.id] = action.payload;
-      draft[action.payload.id].fetched = true;
+    case FETCH_PROJECT_REQUEST:
+      draft[action.payload] = {network: network.pending()};
+      break;
+    case FETCH_PROJECT_RESPONSE:
+      const response = action.payload.response;
+      const id = action.payload.id
+      if (response.error !== undefined) {
+        draft[id] = {network: network.failure(response.error)};
+      } else {
+        draft[id] = response.project;
+        draft[id].network = network.success();
+      }
+      break;
+    case FETCH_PROJECT_FAILURE:
+      draft[action.payload.id].network = network.failure(action.payload.error);
       break;
     case PUT_OBJECT_SUCCESS:
       const object = action.payload.object;
