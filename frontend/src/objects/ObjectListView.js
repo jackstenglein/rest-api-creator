@@ -33,13 +33,16 @@ const Toolbar = props => (
   </Row>
 )
 
-const ObjectListView = props => (
+const ObjectListView = props => {
+  const { network, objects } = props.project;
+  return (
   <div>
-    <Toolbar onRefresh={props.onRefresh}/>
+    <Toolbar onRefresh={props.refreshProject}/>
     <br />
-    <ErrorAlert error={props.network.error} />
-    <ObjectList objects={props.objects} />
+    <ErrorAlert error={network.error} />
+    <ObjectList objects={objects} />
   </div>
-) 
+  )
+}
 
 export default ObjectListView;

@@ -7,23 +7,34 @@ import { getProject } from '../api/api';
 
 
 class ProjectRoute extends React.Component {
+  constructor(props) {
+    super(props);
+    this.getProject = this.getProject.bind(this);
+  }
 
-  async componentDidMount() {
+  componentDidMount() {
     console.log("Project Route component did mount:  ", this.props.project);
     const network = this.props.project.network;
     if (network.status === STATUS_NONE || network.status === STATUS_FAILURE) {
       console.log("Getting the project");
-      const projectId = "defaultProject"; // TODO: dynamically get this from URL
-      this.props.getProjectRequest(projectId);
-      const response = await getProject(projectId);
-      this.props.getProjectResponse(projectId, response);
+      this.getProject();
     }
+  }
+
+  async getProject() {
+    const projectId = "defaultProject"; // TODO: dynamically get this from URL
+    this.props.getProjectRequest(projectId);
+    const response = await getProject(projectId);
+    console.log("Get project response: ", response);
+    this.props.getProjectResponse(projectId, response);
   }
 
   render() {
     const { component: Component, project, ...rest } = this.props;
     return (
-      <Route {...rest} render={props => (<Component {...props} project={project}/>)} />
+      <Route {...rest} render={props => (
+        <Component {...props} project={project} refreshProject={this.getProject}/>
+      )}/>
     )
   }
 }
