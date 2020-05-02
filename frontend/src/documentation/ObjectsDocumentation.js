@@ -2,6 +2,10 @@ import React from 'react';
 import Table from 'react-bootstrap/Table';
 import Required from './Required.js';
 
+const ID_DESCRIPTION = "The id attribute uniquely identifies database records of this"
+    + " object type. There can only be one record with a given id. Each time an"
+    + " object of this type is created, it is automatically given a new id. The id can"
+    + " be used to read and edit specific object instances from the database.";
 const NO_OBJECTS_MESSAGE = "This project doesn't have any objects yet.";
 
 // AttributeDocumentation returns the JSX for the documentation of a single attribute. props should have an
@@ -34,8 +38,9 @@ const ObjectDocumentation = props => (
         </tr>
       </thead>
       <tbody>
+        <AttributeDocumentation attribute={{name: "id", type: "Integer", description: ID_DESCRIPTION}}/>
         {
-          props.object.attributes.map(attribute => (
+          props.object.attributes && props.object.attributes.map(attribute => (
             <AttributeDocumentation key={attribute.name} attribute={attribute} />
           ))
         }

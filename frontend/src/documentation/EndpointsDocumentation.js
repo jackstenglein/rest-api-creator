@@ -38,21 +38,32 @@ const ParameterTable = props => (
 
 // CreateDocumentation returns the JSX for the default CreateObject endpoint. props should have an `object` field
 // with the object definition.
-const CreateDocumentation = props => (
-  <div>
-    <h4>Create {props.object.name}</h4>
-    <p>POST /{props.object.name.toLowerCase()}</p>
-    <p>This endpoint adds a new {props.object.name} to the database.</p>
-    <h5>Parameters</h5>
-    <ParameterTable>
+const CreateDocumentation = props => {
+  var parameters;
+  if (props.object.attributes === undefined || props.object.attributes.length === 0) {
+    parameters = (<p>This endpoint has no parameters.</p>);
+  } else {
+    parameters = (
+      <ParameterTable>
       {
         props.object.attributes.map(attribute => (
           <ParameterRow key={attribute.name} name={attribute.name} required={attribute.required} description={attribute.description} location="Body"/>
         ))
       }
-    </ParameterTable>
-  </div>
-)
+      </ParameterTable>
+    )
+  }
+
+  return (
+    <div>
+      <h4>Create {props.object.name}</h4>
+      <p>POST /{props.object.name.toLowerCase()}</p>
+      <p>This endpoint adds a new {props.object.name} to the database.</p>
+      <h5>Parameters</h5>
+      { parameters }
+    </div>
+  )
+}
 
 // ReadDocumentation returns the JSX for the default ReadObjectById endpoint. props should have an `object` field
 // with the object definition.
@@ -84,7 +95,7 @@ const UpdateDocumentation = props => {
       <ParameterTable>
           <ParameterRow name={idName} required={true} description={"The id of the " + props.object.name.toLowerCase() + " to update."} location="Path"/>
           {
-            props.object.attributes.map(attribute => (
+            props.object.attributes && props.object.attributes.map(attribute => (
               <ParameterRow key={attribute.name} name={attribute.name} required={attribute.required} description={attribute.description} location="Body"/>
             ))
           }
