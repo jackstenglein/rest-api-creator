@@ -21,7 +21,7 @@ const PrimaryLayout = () => (
           </Col>
           <Col className="mt-2">
             <Switch>
-              <Route path="/app/details" exact component={ProjectDetails} />
+              <ProjectRoute path="/app/details" exact component={ProjectDetails} />
               <Route path="/app/objects/" component={ObjectLayout} />
               <Route path="/app/endpoints/" component={Endpoints} />
               <ProjectRoute path="/app/documentation" component={Documentation} />
