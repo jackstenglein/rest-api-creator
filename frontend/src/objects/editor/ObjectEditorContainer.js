@@ -7,6 +7,7 @@ import validateObject from './Validator.js';
 import deepEqual from 'deep-equal';
 import { Prompt, Redirect } from 'react-router-dom';
 import { putObject } from '../../api/api.js';
+import { STATUS_SUCCESS } from '../../redux/modules/network.js';
 
 const EMPTY_OBJECT = {
   name: "",
@@ -26,13 +27,7 @@ class ObjectEditorContainer extends React.Component {
   constructor(props) {
     super(props)
    
-
-    console.log("Props: ", props)
-
-    this.state = {
-      values: this.getOriginalObject()
-    };
-
+    this.state = {values: this.getOriginalObject()};
     this.addAttribute = this.addAttribute.bind(this);
     this.changeName = this.changeName.bind(this);
     this.changeDescription = this.changeDescription.bind(this);
@@ -41,8 +36,13 @@ class ObjectEditorContainer extends React.Component {
     this.removeAttribute = this.removeAttribute.bind(this);
   }
 
-  // addAttribute adds an empty attribute object to the state's values.attributes array. It also adds an empty 
-  // error object to the state's errors.attributes array.
+  componentDidUpdate(prevProps) {
+    if (prevProps.project.network.status !== STATUS_SUCCESS && this.props.project.network.status === STATUS_SUCCESS) {
+      this.setState({values: this.getOriginalObject()});
+    }
+  }
+
+  // addAttribute adds an empty attribute object to the state's values.attributes array.
   addAttribute() {
     const nextState = produce(this.state, draftState => {
       draftState.values.attributes.push({name: "", type: "", defaultValue: "", description: ""});
@@ -78,11 +78,24 @@ class ObjectEditorContainer extends React.Component {
   // getOriginalObject returns the starting object definition for when the object editor first opens.
   getOriginalObject() {
     const objectId = this.props.match.params.objectId;
-    const object = this.props.allObjects[objectId];
+    if (objectId === undefined) {
+      // We are creating an object
+      return JSON.parse(JSON.stringify(EMPTY_OBJECT));
+    } 
+
+    if (this.props.project.network.status !== STATUS_SUCCESS) {
+      // We haven't finished fetching the project
+      return undefined;
+    }
+
+    const object = this.props.project.objects[objectId];
     if (object !== undefined) {
+      // We are editing an existing object
       return JSON.parse(JSON.stringify(object));
     } 
-    return JSON.parse(JSON.stringify(EMPTY_OBJECT));
+
+    // We are trying to edit an object but it does not exist
+    return undefined;
   }
 
   // onSave handles clicks to the save button. If this action is triggered, then the object should be valid.
@@ -112,7 +125,6 @@ class ObjectEditorContainer extends React.Component {
   }
 
   // removeAttribute removes the attribute at the given index from the state's values.attributes array.
-  // removeAttribute also removes the error object at the given index from the state's errors.attributes array.
   removeAttribute(i) {
     const nextState = produce(this.state, draftState => {
       draftState.values.attributes.splice(i, 1);
@@ -132,15 +144,16 @@ class ObjectEditorContainer extends React.Component {
       attribute: this.changeAttribute
     }
 
-    const [isValid, errors] = validateObject(this.state.values, this.props.allObjects);
+    const [isValid, errors] = validateObject(this.state.values, this.props.project.objects);
     const cancelPrompt = !deepEqual(this.state.values, this.getOriginalObject())
+    const alertError = this.state.apiError || this.props.project.network.error;
 
     return (
       <>
         <Prompt when={cancelPrompt} message="Are you sure you want to discard your changes?"/> 
         <ObjectEditor 
           values={this.state.values}
-          apiError={this.state.apiError}
+          alertError={alertError}
           isValid={isValid}
           errors={errors} 
           onChangeHandlers={onChangeHandlers}
@@ -153,12 +166,6 @@ class ObjectEditorContainer extends React.Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    allObjects: state.projects.defaultProject.objects
-  };
-}
-
 const mapDispatchToProps = dispatch => {
   return {
     onSave: object => {
@@ -167,4 +174,4 @@ const mapDispatchToProps = dispatch => {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ObjectEditorContainer);
+export default connect(null, mapDispatchToProps)(ObjectEditorContainer);

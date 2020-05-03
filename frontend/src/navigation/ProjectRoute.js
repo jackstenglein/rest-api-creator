@@ -13,10 +13,8 @@ class ProjectRoute extends React.Component {
   }
 
   componentDidMount() {
-    console.log("Project Route component did mount:  ", this.props.project);
     const network = this.props.project.network;
     if (network.status === STATUS_NONE || network.status === STATUS_FAILURE) {
-      console.log("Getting the project");
       this.getProject();
     }
   }

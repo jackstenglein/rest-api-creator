@@ -22,11 +22,16 @@ const EditorToolbar = props => (
   </Row>
 )
 
-const ObjectEditor = props => (
+const ObjectEditor = props => {
+  if (props.values === undefined) {
+    return null;
+  }
+
+  return (
   <div>
     <EditorToolbar isValid={props.isValid} onSave={props.onSave} onCancel={props.onCancel}/>
     <br />
-    <ErrorAlert error={props.apiError}/>
+    <ErrorAlert error={props.alertError}/>
     <ObjectInfoEditor {...props}/>
     <ObjectAttributeEditor 
       values={props.values.attributes} 
@@ -37,6 +42,6 @@ const ObjectEditor = props => (
     />
   </div>
 )
-
+}
 
 export default ObjectEditor;

@@ -2,6 +2,10 @@
 // validateAttributes checks an array of attributes and returns [true, errors] if the attributes are valid and
 // [false, errors] otherwise. If the attributes are valid, errors is an array of empty error objects.
 function validateAttributes(attributes) {
+  if (attributes === undefined) {
+    return [true, []]
+  }
+
   const errors = [];
   let names = new Set([]);
   var attributesOk = true;
@@ -70,7 +74,7 @@ function validateObjectName(name, originalId, allObjects) {
     return [true, ""]; 
   }
 
-  const conflictingObject = allObjects[newId];
+  const conflictingObject = allObjects ? allObjects[newId] : undefined;
   if (conflictingObject !== undefined) {
     // In this case, we are creating a new object or editing an existing object and changed its name such that
     // its id conflicts with another object.
@@ -83,6 +87,10 @@ function validateObjectName(name, originalId, allObjects) {
 // validateObject checks the provided object and returns a corresponding object of error messages. It returns
 // [true, errors] if the object is valid and [false, errors] otherwise.
 function validateObject(object, allObjects) {
+  if (object === undefined) {
+    return [true, {}]
+  }
+
   let [nameOk, nameError] = validateObjectName(object.name, object.id, allObjects);
   let [attributesOk, attributeErrors] = validateAttributes(object.attributes);
   const errors = {
