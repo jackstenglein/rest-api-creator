@@ -4,6 +4,7 @@ import PrimaryLayout from './PrimaryLayout.js';
 import './App.css';
 import LoginContainer from '../portal/LoginContainer.js';
 import SignupContainer from '../portal/SignupContainer.js';
+import AuthorizedRoute from './AuthorizedRoute.js';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
         {/* <Route path="/auth" component="" /> */}
         <Route path="/" exact component={SignupContainer} />
         <Route path="/login" component={LoginContainer} />
-        <Route path="/app" component={PrimaryLayout} />
+        <AuthorizedRoute path="/app" component={PrimaryLayout} />
       </Switch>
     </BrowserRouter>
   );
