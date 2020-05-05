@@ -3,16 +3,16 @@ import { Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import * as network from '../redux/modules/network.js';
 import * as userInfo from '../redux/modules/userInfo.js';
-
+import { getUser } from '../api/api.js';
 
 class AuthorizedRoute extends React.Component {
-  componentDidMount() {
+  async componentDidMount() {
     const authenticated = this.props.userInfo.authenticated;
     const net = this.props.userInfo.network;
     if (!authenticated && (net.status === network.STATUS_NONE || net.status === network.STATUS_FAILURE)) {
       console.log("Query for the user");
       this.props.getUserRequest()
-      const response = {error: "Incorrect password"}; // TODO: pull this from API
+      const response = await getUser();
       this.props.getUserResponse(response);
     }
   }

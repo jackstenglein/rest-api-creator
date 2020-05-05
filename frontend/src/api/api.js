@@ -1,11 +1,7 @@
 import ky from 'ky';
 
-const api = ky.create({prefixUrl: "https://soesulcbkd.execute-api.us-east-1.amazonaws.com/alpha/", credentials: "include"})
-
-
-const defaultError = () => {
-  return {error: "Failed to make network request."};
-}
+const api = ky.create({prefixUrl: "https://soesulcbkd.execute-api.us-east-1.amazonaws.com/alpha/", credentials: "include"});
+const defaultError = {error: "Failed to make network request."};
 
 export async function getProject(projectId) {
   try  {
@@ -14,7 +10,18 @@ export async function getProject(projectId) {
     if (err.response !== undefined) {
       return await err.response.json();
     }
-    return defaultError();
+    return defaultError;
+  }
+}
+
+export async function getUser() {
+  try {
+    return await api.get(`user`).json();
+  } catch (err) {
+    if (err.response !== undefined) {
+      return await err.response.json();
+    }
+    return defaultError;
   }
 }
 
