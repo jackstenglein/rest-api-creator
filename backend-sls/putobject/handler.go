@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/google/uuid"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
@@ -35,7 +34,7 @@ func HandlePutObject(request events.APIGatewayProxyRequest) (events.APIGatewayPr
 	json.Unmarshal([]byte(request.Body), &object)
 
 	// Perform the action
-	id, err := putObjectFunc(cookie, projectID, object, auth.VerifyCookie, dao.Dynamo, uuid.NewRandom)
+	id, err := putObjectFunc(cookie, projectID, object, auth.VerifyCookie, dao.Dynamo)
 
 	// Handle the output
 	errString, status := errors.UserDetails(err)

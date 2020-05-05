@@ -10,10 +10,10 @@ import (
 	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 )
 
-type putObjectMockFunc func(string, string, *dao.Object, verifyCookieFunc, putObjectDatabase, uuidFunc) (string, error)
+type putObjectMockFunc func(string, string, *dao.Object, verifyCookieFunc, putObjectDatabase) (string, error)
 
 func putObjectMock(wantCookie string, wantProjectID string, wantObject *dao.Object, wantID string, err error) putObjectMockFunc {
-	return func(cookie string, projectID string, object *dao.Object, verify verifyCookieFunc, db putObjectDatabase, uuid uuidFunc) (string, error) {
+	return func(cookie string, projectID string, object *dao.Object, verify verifyCookieFunc, db putObjectDatabase) (string, error) {
 		if cookie != wantCookie || projectID != projectID || !reflect.DeepEqual(object, wantObject) {
 			return "", errors.NewServer("Incorrect parameters passed to mock")
 		}

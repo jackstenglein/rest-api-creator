@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
@@ -39,15 +38,6 @@ func (mock *databaseMock) UpdateObject(email string, projectID string, object *d
 	return mock.err
 }
 
-var mockUUID = uuid.New()
-var mockUUIDString = mockUUID.String()
-
-func newUUIDMock(err error) uuidFunc {
-	return func() (uuid.UUID, error) {
-		return mockUUID, err
-	}
-}
-
 var putObjectTests = []struct {
 	name string
 
@@ -58,7 +48,6 @@ var putObjectTests = []struct {
 
 	// Mock data
 	db        *databaseMock
-	uuidFunc  uuidFunc
 	email     string
 	verifyErr error
 
@@ -148,14 +137,6 @@ var putObjectTests = []struct {
 		wantErr: errors.Wrap(errors.Wrap(errors.NewClient("Attribute type `` is not supported"), "Object must have valid attributes"), "Object is invalid"),
 	},
 	{
-		name:      "UuidError",
-		cookie:    "cookie",
-		projectID: "projectId",
-		object:    &dao.Object{Name: "NewObject", Description: "desc"},
-		uuidFunc:  newUUIDMock(errors.NewServer("UUID failure")),
-		wantErr:   errors.Wrap(errors.NewServer("UUID failure"), "Failed to generate UUID"),
-	},
-	{
 		name:      "InvalidCookie",
 		cookie:    "cookie",
 		projectID: "projectId",
@@ -169,8 +150,8 @@ var putObjectTests = []struct {
 		name:      "DatabaseError",
 		cookie:    "cookie",
 		projectID: "projectId",
-		object:    &dao.Object{ID: "id", Name: "name", Description: "desc"},
-		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "id", Name: "name", CodeName: "Name", Description: "desc"}, errors.NewServer("DDB failure")},
+		object:    &dao.Object{Name: "name", Description: "desc"},
+		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "name", Name: "name", CodeName: "Name", Description: "desc"}, errors.NewServer("DDB failure")},
 		email:     "test@example.com",
 		wantErr:   errors.Wrap(errors.NewServer("DDB failure"), "Failed database call to put object"),
 	},
@@ -190,7 +171,7 @@ var putObjectTests = []struct {
 			"test@example.com",
 			"projectId",
 			&dao.Object{
-				ID:          "id",
+				ID:          "name",
 				Name:        "name",
 				CodeName:    "Name",
 				Description: "desc",
@@ -201,17 +182,16 @@ var putObjectTests = []struct {
 			nil,
 		},
 		email:  "test@example.com",
-		wantID: "id",
+		wantID: "name",
 	},
 	{
 		name:      "SuccessfulCreate",
 		cookie:    "cookie",
 		projectID: "projectId",
 		object:    &dao.Object{Name: "name", Description: "desc"},
-		uuidFunc:  newUUIDMock(nil),
-		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: mockUUIDString, Name: "name", CodeName: "Name", Description: "desc"}, nil},
+		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "name", Name: "name", CodeName: "Name", Description: "desc"}, nil},
 		email:     "test@example.com",
-		wantID:    mockUUIDString,
+		wantID:    "name",
 	},
 }
 
@@ -222,7 +202,7 @@ func TestPutObject(t *testing.T) {
 			verifyCookie := verifyCookieMock("cookie", test.db, test.email, test.verifyErr)
 
 			// Execute
-			id, err := putObject(test.cookie, test.projectID, test.object, verifyCookie, test.db, test.uuidFunc)
+			id, err := putObject(test.cookie, test.projectID, test.object, verifyCookie, test.db)
 
 			// Verify
 			if id != test.wantID {

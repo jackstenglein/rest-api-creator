@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
@@ -21,10 +20,6 @@ type putObjectDatabase interface {
 	auth.UserGetter
 	UpdateObject(string, string, *dao.Object) error
 }
-
-// uuidFunc wraps the function type used to create UUIDs.
-// This allows for dependency injection of the function.
-type uuidFunc func() (uuid.UUID, error)
 
 // validAttribute checks that the given attribute has valid values. If the attribute is valid, its
 // CodeName field is set. If the attribute is invalid, an error is returned. An attribute is invalid if:
@@ -84,12 +79,10 @@ func validObject(object *dao.Object) error {
 }
 
 // putObject either creates or replaces the given object within the given project. The object's ID is returned.
-// If an error occurs, it is returned. If the object's `ID` field is empty, a UUID will be generated for the object
-// and the object will be created in the project. If the object's `ID` field is not empty and an object with the
-// ID value already exists in the project, the existing object will be replaced. If the object's `ID`
-// field is not empty but no object with the ID value already exists, then the given object will be created
-// as a new object.
-func putObject(cookie string, projectID string, object *dao.Object, verifyCookie verifyCookieFunc, db putObjectDatabase, uuid uuidFunc) (string, error) {
+// If an error occurs, it is returned. The object's `ID` field is set to the lowercase string of the object's name.
+// If an object with that ID value already exists in the project, the existing object will be replaced. If no object
+// with that ID value exists, then the object will be created.
+func putObject(cookie string, projectID string, object *dao.Object, verifyCookie verifyCookieFunc, db putObjectDatabase) (string, error) {
 	if cookie == "" || projectID == "" || object == nil {
 		return "", errors.NewClient("Parameters `cookie`, `projectId` and `object` are required")
 	}
@@ -99,13 +92,7 @@ func putObject(cookie string, projectID string, object *dao.Object, verifyCookie
 		return "", errors.Wrap(err, "Object is invalid")
 	}
 
-	if object.ID == "" {
-		uuid, err := uuid()
-		if err != nil {
-			return "", errors.Wrap(err, "Failed to generate UUID")
-		}
-		object.ID = uuid.String()
-	}
+	object.ID = strings.ToLower(object.Name)
 
 	email, err := verifyCookie(cookie, db)
 	if err != nil {
