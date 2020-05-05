@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Switch } from 'react-router-dom';
 import PrimaryLayout from './PrimaryLayout.js';
 import './App.css';
 import LoginContainer from '../portal/LoginContainer.js';
@@ -16,10 +16,9 @@ function App() {
         crossOrigin="anonymous"
       />
       <Switch>
-        {/* <Route path="/auth" component="" /> */}
-        <Route path="/" exact component={SignupContainer} />
-        <Route path="/login" component={LoginContainer} />
-        <AuthorizedRoute path="/app" component={PrimaryLayout} />
+        <AuthorizedRoute path="/" exact shouldAuthenticate={false} component={SignupContainer} />
+        <AuthorizedRoute path="/login" shouldAuthenticate={false} component={LoginContainer} />
+        <AuthorizedRoute path="/app" shouldAuthenticate={true} component={PrimaryLayout} />
       </Switch>
     </BrowserRouter>
   );

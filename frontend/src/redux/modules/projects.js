@@ -53,7 +53,7 @@ const reducer = produce((draft, action = {}) => {
       draft[projectId].objects[object.id] = object; 
       break;
     case GET_USER_RESPONSE:
-      if (action.payload.user.projects) {
+      if (action.payload.user && action.payload.user.projects) {
         Object.entries(action.payload.user.projects).forEach(([id, project]) => {
           draft[id] = project;
           draft[id].network = network.success();

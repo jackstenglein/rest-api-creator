@@ -18,22 +18,29 @@ class AuthorizedRoute extends React.Component {
   }
 
   render() {
-    const { component: Component, userInfo, ...rest} = this.props;
+    const { component: Component, userInfo, shouldAuthenticate, ...rest} = this.props;
+    const status = userInfo.network.status;
+
     return (
       <Route {...rest} render={({location}) => {
-        if (userInfo.authenticated) {
-          return <Component/>
+        // The GetUser request completed
+        if (status === network.STATUS_SUCCESS || status === network.STATUS_FAILURE) {
+          // We have the desired authentication level, so return the component.
+          if (userInfo.authenticated === shouldAuthenticate) {
+            return <Component/>
+          }
+          // We are either not logged in and should be, or we are logged in and shouldn't be. Redirect as appropriate
+          return shouldAuthenticate ? <Redirect to={{pathname: "/login", state: {from: location}}}/> 
+            : <Redirect to="/app/details"/>;
         }
 
-        switch(userInfo.network.status) {
-          case network.STATUS_NONE:
-          case network.STATUS_PENDING:
-            return null
-          case network.STATUS_SUCCESS:
-            return <Component/>
-          case network.STATUS_FAILURE:
-            return <Redirect to={{pathname: "/login", state: {from: location}}} />
+        // The GetUser request is still loading
+        if (status === network.STATUS_PENDING || status === network.STATUS_NONE) {
+          return null;
         }
+
+        // We should never get here
+        return <p>If you are seeing this, there is a bug in my code. Please let me know. Thanks.</p>  
       }}/>
     )
   }
