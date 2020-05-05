@@ -2,6 +2,7 @@
 
 import produce from "immer"
 import * as network from './network.js';
+import { GET_USER_RESPONSE } from './userInfo.js';
 
 // Actions
 const FETCH_PROJECT_REQUEST = "projects/fetchProjectRequest";
@@ -48,8 +49,16 @@ const reducer = produce((draft, action = {}) => {
       break;
     case PUT_OBJECT_SUCCESS:
       const object = action.payload.object;
-      const projectId = action.payload.projectId
+      const projectId = action.payload.projectId;
       draft[projectId].objects[object.id] = object; 
+      break;
+    case GET_USER_RESPONSE:
+      if (action.payload.user.projects) {
+        Object.entries(action.payload.user.projects).forEach(([id, project]) => {
+          draft[id] = project;
+          draft[id].network = network.success();
+        })
+      }
       break;
   }
 }, initialState)

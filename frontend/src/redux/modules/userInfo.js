@@ -50,7 +50,7 @@ function emailReducer(state, action) {
       if (action.payload.error) {
         return "";
       }
-      return action.payload.email;
+      return action.payload.user.email;
     default:
       return state;
   }
