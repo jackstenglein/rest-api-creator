@@ -1,5 +1,4 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import Button from 'react-bootstrap/Button';
 import ErrorAlert from '../portal/ErrorAlert';
 import { STATUS_PENDING } from '../redux/modules/network.js';
