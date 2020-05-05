@@ -91,6 +91,21 @@ functions:
             parameters:
               paths:
                 id: true
+  getUser:
+    handler: getuser.HandleGetUser
+    events:
+      - http:
+          path: user
+          method: get
+          cors:
+            origin: "http://localhost:3000"
+            headers:
+              - "Content-Type"
+              - "X-Amz-Date"
+              - "Authorization"
+              - "X-Api-Key" 
+              - "X-Amz-Security-Token"
+            allowCredentials: true
   login:
     handler: portal.HandleLoginRequest
     events:

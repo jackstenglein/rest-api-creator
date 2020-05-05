@@ -17,6 +17,8 @@ type getUserDatabase interface {
 // This allows for dependency injection of the function.
 type verifyCookieFunc func(string, auth.UserGetter) (string, error)
 
+// getUser returns the user associated with the given cookie in the given database. It returns the
+// error generated if the cookie was invalid or the database query failed.
 func getUser(cookie string, verifyCookie verifyCookieFunc, db getUserDatabase) (*dao.User, error) {
 	if cookie == "" {
 		return nil, errors.NewClient("Not authenticated")
