@@ -118,7 +118,7 @@ func (dynamo) getUser(email string, expression string, attributeNames map[string
 // GetUser returns the entire user object associated with the given email. All projects are included in
 // their entirety. If an error occurs, the returned user will be nil.
 func (dynamo) GetUser(email string) (*User, error) {
-	expression := ""
+	expression := "Email, Projects"
 	return Dynamo.getUser(email, expression, nil)
 }
 
