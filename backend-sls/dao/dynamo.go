@@ -62,11 +62,12 @@ func (dynamo) CreateUser(email string, password string, token string) error {
 			// TODO: Remove this and dynamically create projects
 			"Projects": {
 				M: map[string]*dynamodb.AttributeValue{
-					"default": {
+					"defaultProject": {
 						M: map[string]*dynamodb.AttributeValue{
-							"Id":      {S: aws.String("default")},
-							"Name":    {S: aws.String("Default Project")},
-							"Objects": {M: map[string]*dynamodb.AttributeValue{}},
+							"Id":          {S: aws.String("defaultProject")},
+							"Name":        {S: aws.String("Default Project")},
+							"Description": {S: aws.String(defaultProjectDesc)},
+							"Objects":     {M: map[string]*dynamodb.AttributeValue{}},
 						},
 					},
 				},

@@ -12,9 +12,10 @@ type User struct {
 
 // Project represents an instance of the Project model in the database.
 type Project struct {
-	ID      string             `dynamodbav:"Id" json:"id"`
-	Name    string             `dynamodbav:"Name" json:"name"`
-	Objects map[string]*Object `dynamodbav:"Objects" json:"objects,omitempty"`
+	ID          string             `dynamodbav:"Id" json:"id"`
+	Name        string             `dynamodbav:"Name" json:"name"`
+	Description string             `dynamodbav:"Description" json:"description"`
+	Objects     map[string]*Object `dynamodbav:"Objects" json:"objects,omitempty"`
 }
 
 // Object represents an instance of the Object model in the database.
