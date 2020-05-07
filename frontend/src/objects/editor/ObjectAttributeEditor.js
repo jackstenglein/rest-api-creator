@@ -129,7 +129,7 @@ const ObjectAttributeEditor = props => (
     { props.values && props.values.map((value, idx) => (
       <AttributeRow key={idx} index={idx} values={value} errors={props.errors[idx]} onChange={props.onChange} remove={props.remove}/>
     )) }
-    <Button variant="primary" onClick={props.add}>Add attribute</Button>
+    <Button variant="primary" className="mb-2" onClick={props.add}>Add attribute</Button>
   </div>
 )
 
