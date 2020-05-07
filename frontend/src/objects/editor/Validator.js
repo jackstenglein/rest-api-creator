@@ -33,7 +33,7 @@ function validateAttributes(attributes) {
 // validateAttributeDefaultValue checks that the defaultValue of an attribute matches its type.
 // It returns [true, ""] if the defaultValue is valid and [false, errorMessage] otherwise.
 function validateAttributeDefaultValue(type, value) {
-  if (type === 'Integer' && value.length > 0) {
+  if (type === 'Integer' && value && value.length > 0) {
     const defaultValue = Number(value.replace(/,/g, ''));
     if (Number.isNaN(defaultValue) || !Number.isInteger(defaultValue)) {
       return [false, "Please specify an integer."];
