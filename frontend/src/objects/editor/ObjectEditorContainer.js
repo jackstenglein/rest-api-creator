@@ -45,7 +45,7 @@ class ObjectEditorContainer extends React.Component {
   // addAttribute adds an empty attribute object to the state's values.attributes array.
   addAttribute() {
     const nextState = produce(this.state, draftState => {
-      if (draftState.values.attributes === undefined) {
+      if (!draftState.values.attributes) {
         draftState.values.attributes = [];
       }
       draftState.values.attributes.push({name: "", type: "", defaultValue: "", description: ""});

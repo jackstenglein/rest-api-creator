@@ -50,6 +50,9 @@ const reducer = produce((draft, action = {}) => {
     case PUT_OBJECT_SUCCESS:
       const object = action.payload.object;
       const projectId = action.payload.projectId;
+      if (!draft[projectId].objects) {
+        draft[projectId].objects = {};
+      }
       draft[projectId].objects[object.id] = object; 
       break;
     case GET_USER_RESPONSE:
