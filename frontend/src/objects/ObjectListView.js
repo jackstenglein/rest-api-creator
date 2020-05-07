@@ -9,15 +9,21 @@ import { NavLink } from 'react-router-dom';
 
 const listItemClassName="list-group-item list-group-item-action border-bottom"
 
-const ObjectList = props => (
-  <ListGroup variant="flush">
-    {
-      props.objects && Object.entries(props.objects).map(([id, object]) => 
-        <NavLink key={id} to={`/app/objects/${id}/edit`} className={listItemClassName}>{object.name}</NavLink>
-      )
-    }
-  </ListGroup>
-)
+const ObjectList = props => {
+  if (props.objects && Object.keys(props.objects).length > 0) {
+    return (
+      <ListGroup variant="flush">
+        {
+          Object.entries(props.objects).map(([id, object]) => 
+            <NavLink key={id} to={`/app/objects/${id}/edit`} className={listItemClassName}>{object.name}</NavLink>
+          )
+        }
+      </ListGroup>
+    )
+  }
+
+  return <p>This project has no objects yet. Click "Create" to add some.</p>
+}
 
 const Toolbar = props => (
   <Row className="align-items-center justify-content-between">
