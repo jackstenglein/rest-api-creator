@@ -61,7 +61,7 @@ const ObjectsDocumentation = props => {
       <h3 className="mb-0">Objects</h3>
       <hr className="mt-1"/>
       {
-        Object.entries(props.objects).length === 0 
+        !props.objects || Object.entries(props.objects).length === 0 
           ? <p>{NO_OBJECTS_MESSAGE}</p> 
           : Object.entries(props.objects).map(([id, object]) => (
             <ObjectDocumentation key={id} object={object} />
