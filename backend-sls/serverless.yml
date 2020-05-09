@@ -28,6 +28,7 @@ provider:
   runtime: go1.x
   environment:
     TABLE_NAME: 'api-creator-${opt:stage, self:provider.stage}'
+    BUCKET_NAME: 'api-creator-generated-code-${opt:stage, self:provider.stage}'
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
@@ -224,3 +225,7 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: 'api-creator-${opt:stage, self:provider.stage}'
+    ApiCreatorGeneratedCode:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: 'api-creator-generated-code-${opt:stage, self:provider.stage}'
