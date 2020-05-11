@@ -49,7 +49,7 @@ var downloadTests = []struct {
 	},
 	{
 		name:      "DownloadError",
-		localPath: "tempTestFile",
+		localPath: "testdata/tempTestFile",
 		s3Key:     "testKey",
 		mockInput: &s3.GetObjectInput{
 			Bucket: aws.String(os.Getenv("BUCKET_NAME")),
@@ -60,7 +60,7 @@ var downloadTests = []struct {
 	},
 	{
 		name:      "SuccessfulInvocation",
-		localPath: "tempTestFile",
+		localPath: "testdata/tempTestFile",
 		s3Key:     "testKey",
 		mockInput: &s3.GetObjectInput{
 			Bucket: aws.String(os.Getenv("BUCKET_NAME")),

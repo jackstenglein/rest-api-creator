@@ -1,3 +1,4 @@
+// Package s3 provides helper functions for interfacing with Amazon S3.
 package s3
 
 import (
@@ -13,19 +14,24 @@ import (
 	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
 )
 
+// downloader wraps the Download function to support dependency injection of the download service.
 type downloader interface {
 	Download(io.WriterAt, *s3.GetObjectInput, ...func(*s3manager.Downloader)) (int64, error)
 }
 
+// uploader wraps the Upload function to support dependency injection of the upload service.
 type uploader interface {
 	Upload(*s3manager.UploadInput, ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error)
 }
 
-// The session the S3 Downloader will use
+// The session the S3 manager and service will use
 var sess = session.New()
 
+// Default services to use when running on lambda
 var defaultDownloader = s3manager.NewDownloader(sess)
 var defaultUploader = s3manager.NewUploader(sess)
+
+// Wrappers on the services that should be changed only for dependency injection in unit tests.
 var downloadSvc downloader = defaultDownloader
 var uploadSvc uploader = defaultUploader
 
