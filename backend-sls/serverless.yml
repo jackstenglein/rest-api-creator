@@ -40,6 +40,11 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: 'arn:aws:dynamodb:*'
+    - Effect: 'Allow'
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+      Resource: 'arn:aws:s3:::api-creator-generated-code-*'
 
 # you can overwrite defaults here
 #  stage: dev
@@ -73,6 +78,21 @@ package:
   #   - ./bin/**
 
 functions:
+  getDownloadURL:
+    handler: getdownload.HandleRequest
+    events:
+      - http:
+          path: projects/{pid}/code
+          method: get
+          cors:
+            origin: "http://localhost:3000"
+            headers:
+              - "Content-Type"
+              - "X-Amz-Date"
+              - "Authorization"
+              - "X-Api-Key" 
+              - "X-Amz-Security-Token"
+            allowCredentials: true
   getProject:
     handler: getproject.HandleRequest
     events:
