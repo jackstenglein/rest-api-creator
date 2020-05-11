@@ -89,7 +89,7 @@ const UpdateDocumentation = props => {
   return (
     <div>
       <h4>Update {props.object.name} by id</h4>
-      <p>PUT /{props.object.name.toLowerCase()}/{"{" + idName + "}"}</p>
+      <p>PATCH /{props.object.name.toLowerCase()}/{"{" + idName + "}"}</p>
       <p>This endpoint updates an existing {props.object.name} in the database with the given body parameters.</p>
       <h5>Parameters</h5>
       <ParameterTable>
