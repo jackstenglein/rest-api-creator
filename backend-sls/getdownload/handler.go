@@ -36,7 +36,7 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	json, _ := json.Marshal(&getDownloadResponse{URL: url, Error: errString})
 	return events.APIGatewayProxyResponse{
 		Body:       string(json),
-		Headers:    map[string]string{"Access-Control-Allow-Origin": "http://localhost:3000", "Access-Control-Allow-Credentials": "true"},
+		Headers:    map[string]string{"Access-Control-Allow-Origin": "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com", "Access-Control-Allow-Credentials": "true"},
 		StatusCode: status,
 	}, nil
 }

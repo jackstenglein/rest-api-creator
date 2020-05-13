@@ -85,7 +85,7 @@ functions:
           path: projects/{pid}/code
           method: get
           cors:
-            origin: "http://localhost:3000"
+            origin: "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com"
             headers:
               - "Content-Type"
               - "X-Amz-Date"
@@ -100,7 +100,7 @@ functions:
           path: projects/{pid}
           method: get
           cors:
-            origin: "http://localhost:3000"
+            origin: "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com"
             headers:
               - "Content-Type"
               - "X-Amz-Date"
@@ -119,7 +119,7 @@ functions:
           path: user
           method: get
           cors:
-            origin: "http://localhost:3000"
+            origin: "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com"
             headers:
               - "Content-Type"
               - "X-Amz-Date"
@@ -134,7 +134,7 @@ functions:
           path: login
           method: put
           cors:
-            origin: "http://localhost:3000"
+            origin: "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com"
             headers:
               - "Content-Type"
               - "X-Amz-Date"
@@ -149,7 +149,7 @@ functions:
           path: logout
           method: put
           cors:
-            origin: "http://localhost:3000"
+            origin: "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com"
             headers:
               - "Content-Type"
               - "X-Amz-Date"
@@ -164,7 +164,7 @@ functions:
           path: projects/{pid}/objects
           method: put
           cors: 
-            origin: "http://localhost:3000"
+            origin: "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com"
             headers:
               - "Content-Type"
               - "X-Amz-Date"
@@ -179,7 +179,7 @@ functions:
           path: signup
           method: post
           cors:
-            origin: "http://localhost:3000"
+            origin: "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com"
             headers:
               - "Content-Type"
               - "X-Amz-Date"

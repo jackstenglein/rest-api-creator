@@ -78,7 +78,7 @@ func handleRequest(request events.APIGatewayProxyRequest, actionFunc portalFunc)
 	fmt.Println(errors.StackTrace(err))
 	var headers = map[string]string{
 		"Set-Cookie":                       fmt.Sprintf("session=%s;HttpOnly;", cookie),
-		"Access-Control-Allow-Origin":      "http://localhost:3000",
+		"Access-Control-Allow-Origin":      "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com",
 		"Access-Control-Allow-Credentials": "true",
 	}
 	json, err := json.Marshal(&portalResponse{Error: errString})
