@@ -32,8 +32,15 @@ func Unzip(src string, dest string) error {
 			return fmt.Errorf("%s: illegal file path", fpath)
 		}
 
+		// Make Folder
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(fpath, os.ModePerm)
+			continue
+		}
+
 		// Make File
 		if err = os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
+			fmt.Println("Trying to make fpath: " + fpath)
 			return errors.Wrap(err, "Failed to make directory")
 		}
 

@@ -68,13 +68,13 @@ func generateCode(projectID string, cookie string, verifyCookie cookieVerifier, 
 	}
 
 	// Generate the code
-	err = generate(project, "/tmp/blank-sails-project")
+	err = generate(project, "/tmp/defaultProject")
 	if err != nil {
 		return "", errors.Wrap(err, "Failed to generate project code")
 	}
 
 	// Zip the generated code
-	err = zipper("/tmp/generated-project.zip", "/tmp/blank-sails-project")
+	err = zipper("/tmp/generated-project.zip", "/tmp/defaultProject")
 	if err != nil {
 		return "", errors.Wrap(err, "Failed to zip generated code")
 	}
