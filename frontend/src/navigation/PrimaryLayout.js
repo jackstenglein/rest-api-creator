@@ -7,7 +7,7 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Documentation from '../documentation/Documentation.js';
 import Endpoints from '../endpoints/Endpoints.js';
-import ProjectDetails from '../details/ProjectDetails.js';
+import ProjectDetails from '../details/ProjectDetailsContainer.js';
 import { Switch, Redirect } from 'react-router-dom';
 import ProjectRoute from './ProjectRoute.js';
 

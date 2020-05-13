@@ -3,6 +3,18 @@ import ky from 'ky';
 const api = ky.create({prefixUrl: "https://soesulcbkd.execute-api.us-east-1.amazonaws.com/alpha/", credentials: "include"});
 const defaultError = {error: "Failed to make network request."};
 
+export async function getDownloadLink(projectId) {
+  const timeout = 30000; // 30 seconds
+  try {
+    return await api.get(`projects/${projectId}/code`, {timeout: timeout}).json();
+  } catch (err) {
+    if (err.response !== undefined) {
+      return await err.response.json();
+    }
+    return defaultError;
+  }
+}
+
 export async function getProject(projectId) {
   try  {
     return await api.get(`projects/${projectId}`).json();
