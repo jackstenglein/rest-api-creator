@@ -2,6 +2,7 @@ package putobject
 
 import (
 	"encoding/json"
+	"os"
 	"reflect"
 	"testing"
 
@@ -36,7 +37,7 @@ func handlerResponse(id string, err string, status int) events.APIGatewayProxyRe
 	json, _ := json.Marshal(&putObjectResponse{ID: id, Error: err})
 	return events.APIGatewayProxyResponse{
 		Body:       string(json),
-		Headers:    map[string]string{"Access-Control-Allow-Origin": "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com", "Access-Control-Allow-Credentials": "true"},
+		Headers:    map[string]string{"Access-Control-Allow-Origin": os.Getenv("CORS_ORIGIN"), "Access-Control-Allow-Credentials": "true"},
 		StatusCode: status,
 	}
 }

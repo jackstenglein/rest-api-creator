@@ -3,6 +3,7 @@ package portal
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"reflect"
 	"testing"
 
@@ -29,7 +30,7 @@ func handlerRequest(email string, password string) events.APIGatewayProxyRequest
 func handlerResponse(cookie string, err string, status int) events.APIGatewayProxyResponse {
 	json, _ := json.Marshal(&portalResponse{Error: err})
 	var headers = map[string]string{
-		"Access-Control-Allow-Origin":      "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com",
+		"Access-Control-Allow-Origin":      os.Getenv("CORS_ORIGIN"),
 		"Access-Control-Allow-Credentials": "true",
 	}
 	if cookie != "" {
