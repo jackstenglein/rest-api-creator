@@ -2,18 +2,25 @@
 package getproject
 
 import (
-	"encoding/json"
-	"fmt"
+	// "encoding/json"
+	// "fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
-	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
+	// "github.com/jackstenglein/rest_api_creator/backend-sls/errors"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/http"
 )
 
 type getProjectResponse struct {
 	Project *dao.Project `json:"project,omitempty"`
 	Error   string       `json:"error,omitempty"`
+}
+
+func (response *getProjectResponse) SetError(err string) {
+	if response != nil {
+		response.Error = err
+	}
 }
 
 var actionFunc = getProject
@@ -32,12 +39,7 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	// Perform the action
 	project, err := actionFunc(projectID, cookie)
 
-	// Handle the output
-	errString, status := errors.UserDetails(err)
-	fmt.Println(errors.StackTrace(err))
-	json, err := json.Marshal(&getProjectResponse{Project: project, Error: errString})
-	if err != nil {
-		fmt.Println(errors.StackTrace(errors.Wrap(err, "Failed to marshal GetProject response")))
-	}
-	return events.APIGatewayProxyResponse{Body: string(json), Headers: map[string]string{"Access-Control-Allow-Origin": "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com", "Access-Control-Allow-Credentials": "true"}, StatusCode: status}, err
+	// Return the response
+	response := &getProjectResponse{Project: project}
+	return http.GatewayResponse(response, "", err), nil
 }

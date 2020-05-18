@@ -1,18 +1,21 @@
 package getdownload
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
-	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/http"
 )
 
 type getDownloadResponse struct {
 	URL   string `json:"url,omitempty"`
 	Error string `json:"error,omitempty"`
+}
+
+func (response *getDownloadResponse) SetError(err string) {
+	if response != nil {
+		response.Error = err
+	}
 }
 
 var actionFunc = generateCode
@@ -31,12 +34,6 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	url, err := actionFunc(projectID, cookie, auth.VerifyCookie, dao.Dynamo)
 
 	// Handle the output
-	errString, status := errors.UserDetails(err)
-	fmt.Println(errors.StackTrace(err))
-	json, _ := json.Marshal(&getDownloadResponse{URL: url, Error: errString})
-	return events.APIGatewayProxyResponse{
-		Body:       string(json),
-		Headers:    map[string]string{"Access-Control-Allow-Origin": "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com", "Access-Control-Allow-Credentials": "true"},
-		StatusCode: status,
-	}, nil
+	response := &getDownloadResponse{URL: url}
+	return http.GatewayResponse(response, "", err), nil
 }

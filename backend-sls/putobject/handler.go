@@ -3,18 +3,23 @@ package putobject
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
-	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/http"
 )
 
 // putObjectResponse contains the fields returned in the API JSON response body.
 type putObjectResponse struct {
 	ID    string `json:"id,omitempty"`
 	Error string `json:"error,omitempty"`
+}
+
+func (response *putObjectResponse) SetError(err string) {
+	if response != nil {
+		response.Error = err
+	}
 }
 
 // putObjectFun points to the function used to perform the putObject action. It
@@ -37,15 +42,5 @@ func HandlePutObject(request events.APIGatewayProxyRequest) (events.APIGatewayPr
 	id, err := putObjectFunc(cookie, projectID, object, auth.VerifyCookie, dao.Dynamo)
 
 	// Handle the output
-	errString, status := errors.UserDetails(err)
-	fmt.Println(errors.StackTrace(err))
-	json, err := json.Marshal(&putObjectResponse{ID: id, Error: errString})
-	if err != nil {
-		fmt.Println(errors.StackTrace(errors.Wrap(err, "Failed to marshal PutObject response")))
-	}
-	return events.APIGatewayProxyResponse{
-		Body:       string(json),
-		Headers:    map[string]string{"Access-Control-Allow-Origin": "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com", "Access-Control-Allow-Credentials": "true"},
-		StatusCode: status,
-	}, err
+	return http.GatewayResponse(&putObjectResponse{ID: id}, "", err), nil
 }

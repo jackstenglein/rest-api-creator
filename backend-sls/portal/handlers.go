@@ -3,12 +3,11 @@ package portal
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
-	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/http"
 )
 
 // portalRequest represents the HTTP request body when calling the signup or login APIs and is used for unmarshalling.
@@ -20,6 +19,12 @@ type portalRequest struct {
 // portalResponse represents the HTTP response body when calling the signup or login APIs and is used for marshalling.
 type portalResponse struct {
 	Error string `json:"error,omitempty"`
+}
+
+func (response *portalResponse) SetError(err string) {
+	if response != nil {
+		response.Error = err
+	}
 }
 
 // portalFunc wraps the function signature for functions that perform portal actions.
@@ -74,18 +79,20 @@ func handleRequest(request events.APIGatewayProxyRequest, actionFunc portalFunc)
 	cookie, err := actionFunc(portalRequest.Email, portalRequest.Password)
 
 	// Create response
-	errString, status := errors.UserDetails(err)
-	fmt.Println(errors.StackTrace(err))
-	var headers = map[string]string{
-		"Set-Cookie":                       fmt.Sprintf("session=%s;HttpOnly;", cookie),
-		"Access-Control-Allow-Origin":      "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com",
-		"Access-Control-Allow-Credentials": "true",
-	}
-	json, err := json.Marshal(&portalResponse{Error: errString})
-	if err != nil {
-		fmt.Println(errors.StackTrace(errors.Wrap(err, "Failed to marshal signup response")))
-	}
-	return events.APIGatewayProxyResponse{Headers: headers, Body: string(json), StatusCode: status}, nil
+	return http.GatewayResponse(&portalResponse{}, cookie, err), nil
+
+	// errString, status := errors.UserDetails(err)
+	// fmt.Println(errors.StackTrace(err))
+	// var headers = map[string]string{
+	// 	"Set-Cookie":                       fmt.Sprintf("session=%s;HttpOnly;", cookie),
+	// 	"Access-Control-Allow-Origin":      "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com",
+	// 	"Access-Control-Allow-Credentials": "true",
+	// }
+	// json, err := json.Marshal(&portalResponse{Error: errString})
+	// if err != nil {
+	// 	fmt.Println(errors.StackTrace(errors.Wrap(err, "Failed to marshal signup response")))
+	// }
+	// return events.APIGatewayProxyResponse{Headers: headers, Body: string(json), StatusCode: status}, nil
 }
 
 // actionFunc for the signup action.

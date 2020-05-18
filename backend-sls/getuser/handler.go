@@ -2,19 +2,22 @@
 package getuser
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/auth"
 	"github.com/jackstenglein/rest_api_creator/backend-sls/dao"
-	"github.com/jackstenglein/rest_api_creator/backend-sls/errors"
+	"github.com/jackstenglein/rest_api_creator/backend-sls/http"
 )
 
 // getUserResponse contains the fields returned in the API JSON response body.
 type getUserResponse struct {
 	User  *dao.User `json:"user,omitempty"`
 	Error string    `json:"error,omitempty"`
+}
+
+func (response *getUserResponse) SetError(err string) {
+	if response != nil {
+		response.Error = err
+	}
 }
 
 // getUserFunc points to the function used to perform the getUser action. It should only be
@@ -27,19 +30,13 @@ var getUserFunc = getUser
 // have either a 400 or 500 status, and the body will have an `error` field detailing what went wrong.
 // This function always returns a nil error.
 func HandleGetUser(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// Get request parameters
 	cookie := auth.ExtractCookie(request.Headers["Cookie"])
+
+	// Get the user
 	user, err := getUserFunc(cookie, auth.VerifyCookie, dao.Dynamo)
 
-	errString, status := errors.UserDetails(err)
-	fmt.Println(errors.StackTrace(err))
-	json, err := json.Marshal(&getUserResponse{User: user, Error: errString})
-	if err != nil {
-		fmt.Println(errors.StackTrace(errors.Wrap(err, "Failed to marshal GetUser response")))
-	}
-
-	return events.APIGatewayProxyResponse{
-		Body:       string(json),
-		Headers:    map[string]string{"Access-Control-Allow-Origin": "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com", "Access-Control-Allow-Credentials": "true"},
-		StatusCode: status,
-	}, nil
+	// Return the response
+	response := &getUserResponse{User: user}
+	return http.GatewayResponse(response, "", err), nil
 }

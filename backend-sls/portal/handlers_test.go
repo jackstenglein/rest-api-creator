@@ -29,10 +29,13 @@ func handlerRequest(email string, password string) events.APIGatewayProxyRequest
 func handlerResponse(cookie string, err string, status int) events.APIGatewayProxyResponse {
 	json, _ := json.Marshal(&portalResponse{Error: err})
 	var headers = map[string]string{
-		"Set-Cookie":                       fmt.Sprintf("session=%s;HttpOnly;", cookie),
 		"Access-Control-Allow-Origin":      "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com",
 		"Access-Control-Allow-Credentials": "true",
 	}
+	if cookie != "" {
+		headers["Set-Cookie"] = fmt.Sprintf("session=%s;HttpOnly;", cookie)
+	}
+
 	return events.APIGatewayProxyResponse{Headers: headers, Body: string(json), StatusCode: status}
 }
 
