@@ -1,2 +1,0 @@
-class InvalidAttributeException(Exception):
-    pass
