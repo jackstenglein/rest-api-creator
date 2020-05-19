@@ -31,6 +31,7 @@ provider:
     TABLE_NAME: 'api-creator-${self:provider.stage}'
     BUCKET_NAME: 'api-creator-generated-code-${self:provider.stage}'
     CORS_ORIGIN: ${self:custom.origin.${self:provider.stage}}
+    DEPLOYMENT_STAGE: ${self:provider.stage}
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
