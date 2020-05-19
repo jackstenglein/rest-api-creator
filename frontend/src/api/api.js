@@ -1,6 +1,15 @@
 import ky from 'ky';
 
-const api = ky.create({prefixUrl: "https://soesulcbkd.execute-api.us-east-1.amazonaws.com/alpha/", credentials: "include"});
+const config = {
+  dev: {
+    url: "https://soesulcbkd.execute-api.us-east-1.amazonaws.com/dev/"
+  },
+  alpha: {
+    url: "https://9h52owapyf.execute-api.us-east-1.amazonaws.com/alpha/"
+  }
+};
+
+const api = ky.create({prefixUrl: config[process.env.REACT_APP_STAGE].url, credentials: "include"});
 const defaultError = {error: "Failed to make network request."};
 
 export async function getDownloadLink(projectId) {
