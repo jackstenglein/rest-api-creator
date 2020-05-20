@@ -39,5 +39,5 @@ func HandleLogout(request events.APIGatewayProxyRequest) (events.APIGatewayProxy
 	if err != nil {
 		fmt.Println(errors.StackTrace(errors.Wrap(err, "Failed to marshal Logout response")))
 	}
-	return events.APIGatewayProxyResponse{Body: string(json), Headers: map[string]string{"Access-Control-Allow-Origin": "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com", "Access-Control-Allow-Credentials": "true"}, StatusCode: status}, err
+	return events.APIGatewayProxyResponse{Body: string(json), Headers: map[string]string{"Access-Control-Allow-Origin": "https://www.crudcreator.com", "Access-Control-Allow-Credentials": "true"}, StatusCode: status}, err
 }

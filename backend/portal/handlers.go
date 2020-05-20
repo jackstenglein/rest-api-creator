@@ -80,19 +80,6 @@ func handleRequest(request events.APIGatewayProxyRequest, actionFunc portalFunc)
 
 	// Create response
 	return http.GatewayResponse(&portalResponse{}, cookie, err), nil
-
-	// errString, status := errors.UserDetails(err)
-	// fmt.Println(errors.StackTrace(err))
-	// var headers = map[string]string{
-	// 	"Set-Cookie":                       fmt.Sprintf("session=%s;HttpOnly;", cookie),
-	// 	"Access-Control-Allow-Origin":      "http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com",
-	// 	"Access-Control-Allow-Credentials": "true",
-	// }
-	// json, err := json.Marshal(&portalResponse{Error: errString})
-	// if err != nil {
-	// 	fmt.Println(errors.StackTrace(errors.Wrap(err, "Failed to marshal signup response")))
-	// }
-	// return events.APIGatewayProxyResponse{Headers: headers, Body: string(json), StatusCode: status}, nil
 }
 
 // actionFunc for the signup action.

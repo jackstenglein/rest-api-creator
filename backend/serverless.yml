@@ -52,7 +52,7 @@ provider:
 custom:
   origin:
     dev: 'http://localhost:3000'
-    alpha: 'http://jackstenglein-rest-api-creator.s3-website-us-east-1.amazonaws.com'
+    alpha: 'https://www.crudcreator.com'
   cors:
     origin: ${self:custom.origin.${self:provider.stage}}
     headers:
