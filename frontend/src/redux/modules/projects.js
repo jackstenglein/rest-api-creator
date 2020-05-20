@@ -23,6 +23,7 @@ export function putObjectSuccess(projectId, object) {
     type: PUT_OBJECT_SUCCESS, 
     payload: {
       projectId: projectId, 
+      originalId: object.id,
       object: {...object, id: object.name.toLowerCase()}
     }
   };
@@ -49,9 +50,13 @@ const reducer = produce((draft, action = {}) => {
       break;
     case PUT_OBJECT_SUCCESS:
       const object = action.payload.object;
+      const originalId = action.payload.originalId;
       const projectId = action.payload.projectId;
       if (!draft[projectId].objects) {
         draft[projectId].objects = {};
+      }
+      if (originalId !== undefined && originalId !== object.id) {
+        delete draft[projectId].objects[originalId];
       }
       draft[projectId].objects[object.id] = object; 
       break;
