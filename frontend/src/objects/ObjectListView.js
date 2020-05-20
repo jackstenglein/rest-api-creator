@@ -5,7 +5,7 @@ import Col from 'react-bootstrap/Col';
 import ErrorAlert from '../portal/ErrorAlert.js';
 import Row from 'react-bootstrap/Row';
 import ListGroup from 'react-bootstrap/ListGroup';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const listItemClassName="list-group-item list-group-item-action border-bottom"
 
@@ -15,7 +15,7 @@ const ObjectList = props => {
       <ListGroup variant="flush">
         {
           Object.entries(props.objects).map(([id, object]) => 
-            <NavLink key={id} to={`/app/objects/${id}/edit`} className={listItemClassName}>{object.name}</NavLink>
+            <Link key={id} to={`/app/objects/${id}`} className={listItemClassName}>{object.name}</Link>
           )
         }
       </ListGroup>
@@ -33,7 +33,7 @@ const Toolbar = props => (
     <Col xs="auto">
       <ButtonToolbar>
         <Button variant="secondary" className="mr-2" onClick={props.onRefresh}>Refresh</Button>
-        <NavLink to="/app/objects/create"><Button variant="primary">Create</Button></NavLink>
+        <Link to="/app/objects/create"><Button variant="primary">Create</Button></Link>
       </ButtonToolbar>
     </Col>
   </Row>

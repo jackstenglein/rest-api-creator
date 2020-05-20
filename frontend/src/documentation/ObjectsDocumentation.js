@@ -24,7 +24,7 @@ const AttributeDocumentation = props => (
 
 // ObjectDocumentation returns the JSX for the documentation of a single object. props should have an
 // `object` field, containing a dictionary with the object definition.
-const ObjectDocumentation = props => (
+export const ObjectDocumentation = props => (
   <div>
     <h4>{props.object.name}</h4>
     <p>{props.object.description}</p>

@@ -42,7 +42,7 @@ const reducer = produce((draft, action = {}) => {
       const response = action.payload.response;
       const id = action.payload.id
       if (response.error !== undefined) {
-        draft[id] = {network: network.failure(response.error)};
+        draft[id] = {network: network.failure(response.error), objects: {}};
       } else {
         draft[id] = response.project;
         draft[id].network = network.success();
