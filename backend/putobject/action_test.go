@@ -20,18 +20,19 @@ func verifyCookieMock(mockCookie string, mockDB auth.UserGetter, mockEmail strin
 }
 
 type databaseMock struct {
-	email     string
-	projectID string
-	object    *dao.Object
-	err       error
+	email      string
+	projectID  string
+	object     *dao.Object
+	originalID string
+	err        error
 }
 
 func (mock *databaseMock) GetUserInfo(email string) (*dao.User, error) {
 	return nil, nil
 }
 
-func (mock *databaseMock) UpdateObject(email string, projectID string, object *dao.Object) error {
-	if email != mock.email || projectID != mock.projectID || !reflect.DeepEqual(object, mock.object) {
+func (mock *databaseMock) UpdateObject(email string, projectID string, object *dao.Object, originalID string) error {
+	if email != mock.email || projectID != mock.projectID || !reflect.DeepEqual(object, mock.object) || originalID != mock.originalID {
 		fmt.Printf("Got %v; want %v", object, mock.object)
 		return errors.NewServer("Incorrect input to UpdateObject mock.")
 	}
@@ -141,7 +142,7 @@ var putObjectTests = []struct {
 		cookie:    "cookie",
 		projectID: "projectId",
 		object:    &dao.Object{ID: "id", Name: "name", Description: "desc"},
-		db:        &databaseMock{},
+		db:        &databaseMock{originalID: "id"},
 		email:     "test@example.com",
 		verifyErr: errors.NewClient("Invalid cookie"),
 		wantErr:   errors.NewClient("Not authenticated"),
@@ -151,7 +152,7 @@ var putObjectTests = []struct {
 		cookie:    "cookie",
 		projectID: "projectId",
 		object:    &dao.Object{Name: "name", Description: "desc"},
-		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "name", Name: "name", CodeName: "Name", Description: "desc"}, errors.NewServer("DDB failure")},
+		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "name", Name: "name", CodeName: "Name", Description: "desc"}, "", errors.NewServer("DDB failure")},
 		email:     "test@example.com",
 		wantErr:   errors.Wrap(errors.NewServer("DDB failure"), "Failed database call to put object"),
 	},
@@ -179,6 +180,7 @@ var putObjectTests = []struct {
 					{Name: "ValidName", Type: "Text", CodeName: "validName"},
 				},
 			},
+			"id",
 			nil,
 		},
 		email:  "test@example.com",
@@ -189,7 +191,7 @@ var putObjectTests = []struct {
 		cookie:    "cookie",
 		projectID: "projectId",
 		object:    &dao.Object{Name: "name", Description: "desc"},
-		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "name", Name: "name", CodeName: "Name", Description: "desc"}, nil},
+		db:        &databaseMock{"test@example.com", "projectId", &dao.Object{ID: "name", Name: "name", CodeName: "Name", Description: "desc"}, "", nil},
 		email:     "test@example.com",
 		wantID:    "name",
 	},

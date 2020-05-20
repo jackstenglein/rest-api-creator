@@ -18,7 +18,7 @@ type verifyCookieFunc func(string, auth.UserGetter) (string, error)
 // This allows for dependency injection of the database.
 type putObjectDatabase interface {
 	auth.UserGetter
-	UpdateObject(string, string, *dao.Object) error
+	UpdateObject(string, string, *dao.Object, string) error
 }
 
 // validAttribute checks that the given attribute has valid values. If the attribute is valid, its
@@ -92,6 +92,7 @@ func putObject(cookie string, projectID string, object *dao.Object, verifyCookie
 		return "", errors.Wrap(err, "Object is invalid")
 	}
 
+	originalID := object.ID
 	object.ID = strings.ToLower(object.Name)
 
 	email, err := verifyCookie(cookie, db)
@@ -99,7 +100,7 @@ func putObject(cookie string, projectID string, object *dao.Object, verifyCookie
 		return "", errors.NewClient("Not authenticated")
 	}
 
-	err = db.UpdateObject(email, projectID, object)
+	err = db.UpdateObject(email, projectID, object, originalID)
 	if err != nil {
 		return "", errors.Wrap(err, "Failed database call to put object")
 	}

@@ -186,15 +186,26 @@ func (dynamo) updateUser(email string, expression string, attributeNames map[str
 
 // UpdateObject either creates or replaces the given object within the given project. If an error occurs,
 // it is returned.
-func (dynamo) UpdateObject(email string, projectID string, object *Object) error {
-	expression := "SET Projects.#pid.Objects.#oid = :obj"
+func (dynamo) UpdateObject(email string, projectID string, object *Object, originalID string) error {
+	expression := ""
 	attributeNames := map[string]*string{
 		"#pid": aws.String(projectID),
-		"#oid": aws.String(object.ID),
 	}
 	items := map[string]interface{}{
 		":obj": object,
 	}
+
+	if originalID == object.ID || originalID == "" {
+		// We are updating an existing object or creating a new object
+		expression = "SET Projects.#pid.Objects.#oid = :obj"
+		attributeNames["#oid"] = aws.String(object.ID)
+	} else {
+		// We are changing the ID of an existing object and need to delete the old ID
+		expression = "REMOVE Projects.#pid.Objects.#oid1 SET Projects.#pid.Objects.#oid2 = :obj"
+		attributeNames["#oid1"] = aws.String(originalID)
+		attributeNames["#oid2"] = aws.String(object.ID)
+	}
+
 	return Dynamo.updateUser(email, expression, attributeNames, items)
 }
 

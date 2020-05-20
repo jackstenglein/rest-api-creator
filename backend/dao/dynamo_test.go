@@ -464,9 +464,10 @@ var updateObjectTests = []struct {
 	name string
 
 	// Input
-	email     string
-	projectID string
-	object    *Object
+	email      string
+	projectID  string
+	object     *Object
+	originalID string
 
 	// Mock data
 	mockInput *dynamodb.UpdateItemInput
@@ -506,6 +507,67 @@ var updateObjectTests = []struct {
 		mockErr: errors.NewServer("DynamoDB failure"),
 		wantErr: errors.Wrap(errors.NewServer("DynamoDB failure"), "Failed DynamoDB UpdateItem call"),
 	},
+	{
+		name:       "ConstantID",
+		email:      "error@test.com",
+		projectID:  "projectID",
+		object:     &Object{ID: "objectID", Name: "objectName", CodeName: "ObjectName", Description: "objectDesc"},
+		originalID: "objectID",
+		mockInput: &dynamodb.UpdateItemInput{
+			ExpressionAttributeNames: map[string]*string{
+				"#pid": aws.String("projectID"),
+				"#oid": aws.String("objectID"),
+			},
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":obj": {
+					M: map[string]*dynamodb.AttributeValue{
+						"Id":          {S: aws.String("objectID")},
+						"Name":        {S: aws.String("objectName")},
+						"CodeName":    {S: aws.String("ObjectName")},
+						"Description": {S: aws.String("objectDesc")},
+					},
+				},
+			},
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("error@test.com"),
+				},
+			},
+			TableName:        aws.String(os.Getenv("TABLE_NAME")),
+			UpdateExpression: aws.String("SET Projects.#pid.Objects.#oid = :obj"),
+		},
+	},
+	{
+		name:       "ChangingID",
+		email:      "error@test.com",
+		projectID:  "projectID",
+		object:     &Object{ID: "objectID", Name: "objectName", CodeName: "ObjectName", Description: "objectDesc"},
+		originalID: "differentID",
+		mockInput: &dynamodb.UpdateItemInput{
+			ExpressionAttributeNames: map[string]*string{
+				"#pid":  aws.String("projectID"),
+				"#oid1": aws.String("differentID"),
+				"#oid2": aws.String("objectID"),
+			},
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":obj": {
+					M: map[string]*dynamodb.AttributeValue{
+						"Id":          {S: aws.String("objectID")},
+						"Name":        {S: aws.String("objectName")},
+						"CodeName":    {S: aws.String("ObjectName")},
+						"Description": {S: aws.String("objectDesc")},
+					},
+				},
+			},
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("error@test.com"),
+				},
+			},
+			TableName:        aws.String(os.Getenv("TABLE_NAME")),
+			UpdateExpression: aws.String("REMOVE Projects.#pid.Objects.#oid1 SET Projects.#pid.Objects.#oid2 = :obj"),
+		},
+	},
 }
 
 func TestUpdateObject(t *testing.T) {
@@ -518,7 +580,7 @@ func TestUpdateObject(t *testing.T) {
 			}()
 
 			// Execute
-			gotErr := Dynamo.UpdateObject(test.email, test.projectID, test.object)
+			gotErr := Dynamo.UpdateObject(test.email, test.projectID, test.object, test.originalID)
 
 			// Verify
 			if !errors.Equal(gotErr, test.wantErr) {
