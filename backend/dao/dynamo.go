@@ -88,6 +88,15 @@ func (dynamo) CreateUser(email string, password string, token string) error {
 	return nil
 }
 
+func (dynamo) DeleteObject(email string, projectID string, objectID string) error {
+	expression := "REMOVE Projects.#pid.Objects.#oid"
+	attributeNames := map[string]*string{
+		"#pid": aws.String(projectID),
+		"#oid": aws.String(objectID),
+	}
+	return Dynamo.updateUser(email, expression, attributeNames, nil)
+}
+
 func (dynamo) getUser(email string, expression string, attributeNames map[string]*string) (*User, error) {
 	input := &dynamodb.GetItemInput{
 		ExpressionAttributeNames: attributeNames,
@@ -159,13 +168,16 @@ func (dynamo) GetProject(email string, projectID string) (*Project, error) {
 // TODO: Return client error if path does not exist
 func (dynamo) updateUser(email string, expression string, attributeNames map[string]*string, items map[string]interface{}) error {
 
-	expressionAttributeValues := make(map[string]*dynamodb.AttributeValue)
-	for key, item := range items {
-		itemAV, err := dynamodbattribute.Marshal(item)
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("Failed to marshal item %s", key))
+	var expressionAttributeValues map[string]*dynamodb.AttributeValue
+	if len(items) > 0 {
+		expressionAttributeValues = make(map[string]*dynamodb.AttributeValue)
+		for key, item := range items {
+			itemAV, err := dynamodbattribute.Marshal(item)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("Failed to marshal item %s", key))
+			}
+			expressionAttributeValues[key] = itemAV
 		}
-		expressionAttributeValues[key] = itemAV
 	}
 
 	input := &dynamodb.UpdateItemInput{

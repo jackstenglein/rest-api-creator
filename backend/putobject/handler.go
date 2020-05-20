@@ -22,7 +22,7 @@ func (response *putObjectResponse) SetError(err string) {
 	}
 }
 
-// putObjectFun points to the function used to perform the putObject action. It
+// putObjectFunc points to the function used to perform the putObject action. It
 // should not be changed except in unit tests, when performing dependency injection.
 var putObjectFunc = putObject
 

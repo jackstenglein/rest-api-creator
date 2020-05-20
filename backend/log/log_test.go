@@ -74,7 +74,7 @@ var logTests = []struct {
 			{
 				name:       "ServerError",
 				err:        errors.NewServer("ServerError"),
-				wantString: "[FAIL]: ServerError\n",
+				wantString: "[FAIL]: ServerError\r\t\n",
 			},
 			{
 				name:       "ClientError",
@@ -116,12 +116,12 @@ var logTests = []struct {
 			{
 				name:       "ServerError",
 				err:        errors.NewServer("Server\nError"),
-				wantString: "[FAIL]: Server\rError\n",
+				wantString: "[FAIL]: Server\rError\r\t\n",
 			},
 			{
 				name:       "ClientError",
 				err:        errors.NewClient("Client\nError"),
-				wantString: "[WARN]: Client\rError\n",
+				wantString: "[WARN]: Client\rError\r\t\n",
 			},
 		},
 		logTests: []logTest{
@@ -158,12 +158,12 @@ var logTests = []struct {
 			{
 				name:       "ServerError",
 				err:        errors.NewServer("Server\nError"),
-				wantString: "[FAIL]: Server\rError\n",
+				wantString: "[FAIL]: Server\rError\r\t\n",
 			},
 			{
 				name:       "ClientError",
 				err:        errors.NewClient("Client\nError"),
-				wantString: "[WARN]: Client\rError\n",
+				wantString: "[WARN]: Client\rError\r\t\n",
 			},
 		},
 		logTests: []logTest{
@@ -200,12 +200,12 @@ var logTests = []struct {
 			{
 				name:       "ServerError",
 				err:        errors.NewServer("Server\nError"),
-				wantString: "[FAIL]: Server\rError\n",
+				wantString: "[FAIL]: Server\rError\r\t\n",
 			},
 			{
 				name:       "ClientError",
 				err:        errors.NewClient("Client\nError"),
-				wantString: "[WARN]: Client\rError\n",
+				wantString: "[WARN]: Client\rError\r\t\n",
 			},
 		},
 		logTests: []logTest{

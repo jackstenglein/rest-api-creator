@@ -71,6 +71,13 @@ package:
   #   - ./bin/**
 
 functions:
+  deleteObject:
+    handler: deleteobject.HandleDeleteObject
+    events:
+      - http:
+          path: projects/{pid}/objects/{oid}
+          method: delete
+          cors: ${self:custom.cors}
   getDownloadURL:
     handler: getdownload.HandleRequest
     events:

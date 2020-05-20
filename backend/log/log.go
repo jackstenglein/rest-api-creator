@@ -72,14 +72,16 @@ func SetLevel(l int) {
 // the log level must be Failure or higher for the error to be logged. If the error is a client error,
 // the log level must be Warning or higher for the error to be logged.
 func Error(err error) {
-	errString, status := errors.UserDetails(err)
+	_, status := errors.UserDetails(err)
 	if status == 200 {
 		return
 	}
+
+	stack := errors.StackTrace(err)
 	if status == 500 {
-		Fail(errString)
+		Fail(stack)
 	} else if status == 400 {
-		Warn(errString)
+		Warn(stack)
 	}
 }
 

@@ -65,6 +65,66 @@ func updateItemMock(mockInput *dynamodb.UpdateItemInput, mockOutput *dynamodb.Up
 	}
 }
 
+// ----------- DeleteObject Tests ---------------
+
+var deleteObjectTests = []struct {
+	name string
+
+	// Input
+	email     string
+	projectID string
+	objectID  string
+
+	// Mock data
+	mockInput *dynamodb.UpdateItemInput
+	mockErr   error
+
+	// Expected output
+	wantErr error
+}{
+	{
+		name:      "DatabaseFailure",
+		email:     "test@example.com",
+		projectID: "project",
+		objectID:  "object",
+		mockInput: &dynamodb.UpdateItemInput{
+			ExpressionAttributeNames: map[string]*string{
+				"#pid": aws.String("project"),
+				"#oid": aws.String("object"),
+			},
+			Key: map[string]*dynamodb.AttributeValue{
+				"Email": {
+					S: aws.String("test@example.com"),
+				},
+			},
+			TableName:        aws.String(os.Getenv("TABLE_NAME")),
+			UpdateExpression: aws.String("REMOVE Projects.#pid.Objects.#oid"),
+		},
+		mockErr: errors.NewServer("Database failure"),
+		wantErr: errors.Wrap(errors.NewServer("Database failure"), "Failed DynamoDB UpdateItem call"),
+	},
+}
+
+func TestDeleteObject(t *testing.T) {
+	for _, test := range deleteObjectTests {
+		t.Run(test.name, func(t *testing.T) {
+			// Setup
+			updateSvc = updateItemMock(test.mockInput, nil, test.mockErr)
+			defer func() {
+				updateSvc = defaultSvc
+			}()
+
+			// Execute
+			gotErr := Dynamo.DeleteObject(test.email, test.projectID, test.objectID)
+
+			// Verify
+			if !errors.Equal(gotErr, test.wantErr) {
+				t.Errorf("Got error '%s'; want '%s'", gotErr, test.wantErr)
+			}
+		})
+	}
+}
+
 // ------------- GetUser Tests ------------------
 
 var getUserTests = []struct {

@@ -20,6 +20,10 @@ type UserGetter interface {
 	GetUserInfo(string) (*dao.User, error)
 }
 
+// VerifyCookieFunc wraps the function type used to check the validity of the user's cookie.
+// This allows for dependency injection of the function when verifying cookies.
+type VerifyCookieFunc func(string, UserGetter) (string, error)
+
 // splitCookie takes a cookie in the following format
 //		email#token#mac
 // and separates it into its component parts. If the cookie is not in the correct format,
