@@ -23,14 +23,20 @@ const Toolbar = props => (
   </Row>
 )
 
-const ObjectDetailView = props => (
-  <div>
-    <Toolbar delete={props.delete} object={props.object}/>
-    <br />
-    <ErrorAlert error={props.error} />
-    <ObjectDocumentation object={props.object} />
-    <EndpointsDocumentation objects={[props.object]} />
-  </div>
-)
+const ObjectDetailView = props => {
+  if (props.object === undefined) {
+    return null;
+  }
+  
+  return (
+    <div>
+      <Toolbar delete={props.delete} object={props.object}/>
+      <br />
+      <ErrorAlert error={props.error} />
+      <ObjectDocumentation object={props.object} />
+      <EndpointsDocumentation objects={[props.object]} />
+    </div>
+  );
+}
 
 export default ObjectDetailView;

@@ -5,11 +5,22 @@ import * as network from './network.js';
 import { GET_USER_RESPONSE } from './userInfo.js';
 
 // Actions
+const DELETE_OBJECT_SUCCESS = "object/deleteObjectSuccess";
 const FETCH_PROJECT_REQUEST = "projects/fetchProjectRequest";
 const FETCH_PROJECT_RESPONSE = "projects/fetchProjectResponse";
 const PUT_OBJECT_SUCCESS = "objects/putObjectSuccess";
 
 // Action creators
+export function deleteObjectSuccess(projectId, objectId) {
+  return {
+    type: DELETE_OBJECT_SUCCESS,
+    payload: {
+      projectId: projectId,
+      objectId: objectId
+    }
+  };
+}
+
 export function fetchProjectRequest(projectId) {
   return {type: FETCH_PROJECT_REQUEST, payload: projectId};
 }
@@ -35,6 +46,9 @@ const initialState = {}
 // Full projects reducer -- draft = projects = {pid1: {...}, pid2: {...}, ...}
 const reducer = produce((draft, action = {}) => {
   switch (action.type) {
+    case DELETE_OBJECT_SUCCESS:
+      delete draft[action.payload.projectId].objects[action.payload.objectId];
+      break;
     case FETCH_PROJECT_REQUEST:
       draft[action.payload] = {network: network.pending()};
       break;

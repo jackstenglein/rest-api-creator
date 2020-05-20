@@ -12,6 +12,17 @@ const config = {
 const api = ky.create({prefixUrl: config[process.env.REACT_APP_STAGE].url, credentials: "include"});
 const defaultError = {error: "Failed to make network request."};
 
+export async function deleteObject(projectId, objectId) {
+  try {
+    return await api.delete(`projects/${projectId}/objects/${objectId}`).json();
+  } catch (err) {
+    if (err.response !== undefined) {
+      return await err.response.json();
+    }
+    return defaultError;
+  }
+}
+
 export async function getDownloadLink(projectId) {
   const timeout = 30000; // 30 seconds
   try {
