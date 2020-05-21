@@ -34,6 +34,7 @@ class ObjectEditorContainer extends React.Component {
     this.changeAttribute = this.changeAttribute.bind(this);
     this.onSave = this.onSave.bind(this);
     this.removeAttribute = this.removeAttribute.bind(this);
+    this.toggleHelp = this.toggleHelp.bind(this);
   }
 
   componentDidUpdate(prevProps) {
@@ -135,6 +136,17 @@ class ObjectEditorContainer extends React.Component {
     this.setState(nextState);
   }
 
+  toggleHelp(helpId) {
+    const nextState = produce(this.state, draftState => {
+      if (helpId === draftState.helpId) {
+        draftState.helpId = undefined;
+      } else {
+        draftState.helpId = helpId;
+      }
+    });
+    this.setState(nextState);
+  }
+
   // render returns the JSX for the ObjectEditor.
   render() {
     if (this.state.saved) {
@@ -156,6 +168,8 @@ class ObjectEditorContainer extends React.Component {
         <Prompt when={cancelPrompt} message="Are you sure you want to discard your changes?"/> 
         <ObjectEditor 
           values={this.state.values}
+          helpId={this.state.helpId}
+          toggleHelp={this.toggleHelp}
           alertError={alertError}
           isValid={isValid}
           errors={errors} 

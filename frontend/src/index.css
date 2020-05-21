@@ -28,3 +28,7 @@ html, body, #root, .primary-layout, .height100 {
 .opacity-5 {
   opacity: 1!important;
 }
+
+.clickable {
+  cursor: pointer;
+}

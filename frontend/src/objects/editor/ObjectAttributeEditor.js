@@ -3,6 +3,7 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
+import { ATTRIBUTE_HELP } from '../../help/Help.js';
 
 const ID_DESCRIPTION = "The id attribute uniquely identifies database records of this"
     + " object type. There can only be one record with a given id. Each time an"
@@ -30,7 +31,7 @@ const IdAttribute = () => (
     </Form.Row>
     <Form.Group>
       <Form.Label>Description</Form.Label>
-      <Form.Control as="textarea" rows="2" value={ID_DESCRIPTION} disabled />
+      <Form.Control as="textarea" rows="3" value={ID_DESCRIPTION} disabled />
     </Form.Group>
   </div>
 );
@@ -124,7 +125,9 @@ const AttributeRow = props => (
 // of error objects.
 const ObjectAttributeEditor = props => (
   <div>
-    <h4>Attributes</h4>
+    <h4>
+      Attributes <i className="material-icons clickable" onClick={() => props.toggleHelp(ATTRIBUTE_HELP)}>help_outline</i>
+    </h4>
     <IdAttribute />
     { props.values && props.values.map((value, idx) => (
       <AttributeRow key={idx} index={idx} values={value} errors={props.errors[idx]} onChange={props.onChange} remove={props.remove}/>

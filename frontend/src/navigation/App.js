@@ -15,6 +15,10 @@ function App() {
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
         crossOrigin="anonymous"
       />
+      <link 
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      />
       <Switch>
         <AuthorizedRoute path="/" exact shouldAuthenticate={false} component={SignupContainer} />
         <AuthorizedRoute path="/login" shouldAuthenticate={false} component={LoginContainer} />
