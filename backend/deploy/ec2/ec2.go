@@ -159,11 +159,12 @@ func (deployer) LaunchInstance() (string, string, error) {
 // If successful, it returns the new instance id and the public URL of the instance.
 func runInstance() (*ec2.Instance, error) {
 	runInput := &ec2.RunInstancesInput{
-		ImageId:      aws.String(imageID),
-		InstanceType: aws.String(instanceType),
-		MaxCount:     aws.Int64(1),
-		MinCount:     aws.Int64(1),
-		UserData:     aws.String(encUserData),
+		ImageId:        aws.String(imageID),
+		InstanceType:   aws.String(instanceType),
+		MaxCount:       aws.Int64(1),
+		MinCount:       aws.Int64(1),
+		UserData:       aws.String(encUserData),
+		SecurityGroups: []*string{aws.String(securityGroupName)},
 	}
 	log.Info("Making call to RunInstances with input: ", runInput)
 

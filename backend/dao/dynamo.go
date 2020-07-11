@@ -196,6 +196,18 @@ func (dynamo) updateUser(email string, expression string, attributeNames map[str
 	return errors.Wrap(err, "Failed DynamoDB UpdateItem call")
 }
 
+func (dynamo) UpdateDeployment(email string, projectID string, instanceID string, instanceURL string) error {
+	expression := "SET Projects.#pid.InstanceId = :id, Projects.#pid.DeployUrl = :url"
+	attributeNames := map[string]*string{
+		"#pid": aws.String(projectID),
+	}
+	items := map[string]interface{}{
+		":id":  instanceID,
+		":url": instanceURL,
+	}
+	return Dynamo.updateUser(email, expression, attributeNames, items)
+}
+
 // UpdateObject either creates or replaces the given object within the given project. If an error occurs,
 // it is returned.
 func (dynamo) UpdateObject(email string, projectID string, object *Object, originalID string) error {
