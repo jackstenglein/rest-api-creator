@@ -17,15 +17,19 @@ type deployDatabase interface {
 // deployer wraps the EC2 functions used by the deployProject action in order to allow dependency injection.
 type deployer interface {
 	GetPublicURL(string) (string, error)
-	LaunchInstance() (string, string, error)
+	LaunchInstance(string) (string, string, error)
 }
 
 // deployProject launches an EC2 instance to run the given project. If the deployment is successful and the EC2 instance launches
 // within 5 seconds, the public DNS name of the instance is returned.
-func deployProject(cookie string, projectID string, verifyCookie auth.VerifyCookieFunc, db deployDatabase, ec2 deployer) (string, string, error) {
+func deployProject(cookie string, projectID string, deployRequest deployRequest, verifyCookie auth.VerifyCookieFunc, db deployDatabase, ec2 deployer) (string, string, error) {
 
 	if projectID == "" {
 		return "", "", errors.NewClient("Parameter `pid` is required")
+	}
+
+	if deployRequest.URL == "" {
+		return "", "", errors.NewClient("Parameter `url` is required")
 	}
 
 	email, err := verifyCookie(cookie, db)
@@ -45,7 +49,7 @@ func deployProject(cookie string, projectID string, verifyCookie auth.VerifyCook
 
 	// Launch new instance
 	log.Info("Launching instance")
-	instanceID, url, err := ec2.LaunchInstance()
+	instanceID, url, err := ec2.LaunchInstance(deployRequest.URL)
 	if err != nil {
 		return "", "", errors.Wrap(err, "Failed to launch EC2 instance")
 	}

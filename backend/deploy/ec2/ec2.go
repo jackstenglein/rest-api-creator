@@ -2,6 +2,9 @@
 package ec2
 
 import (
+	"encoding/base64"
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -123,10 +126,10 @@ func (deployer) GetPublicURL(instanceID string) (string, error) {
 	return *instance.PublicDnsName, nil
 }
 
-// LaunchInstance creates an EC2 instance that runs the default project.
-// If successful, it returns the new instance's ID and the public URL of the instance.
-// TODO: pass in the project dynamically
-func (deployer) LaunchInstance() (string, string, error) {
+// LaunchInstance creates an EC2 instance that runs the default project. The EC2 instance will
+// download the project from the provided URL. If successful, LaunchInstance returns the new
+// instance's ID and the public URL of the instance.
+func (deployer) LaunchInstance(projectURL string) (string, string, error) {
 
 	securityGroup, err := describeSecurityGroup()
 	if err != nil {
@@ -147,7 +150,7 @@ func (deployer) LaunchInstance() (string, string, error) {
 		}
 	}
 
-	instance, err := runInstance()
+	instance, err := runInstance(projectURL)
 	if err != nil {
 		return "", "", errors.Wrap(err, "Failed to run instance")
 	}
@@ -157,7 +160,10 @@ func (deployer) LaunchInstance() (string, string, error) {
 
 // runInstance creates a new EC2 instance with the default CRUD Creator security group and launches it.
 // If successful, it returns the new instance id and the public URL of the instance.
-func runInstance() (*ec2.Instance, error) {
+func runInstance(projectURL string) (*ec2.Instance, error) {
+	userData := fmt.Sprintf(userDataTemplate, projectURL)
+	encUserData := base64.StdEncoding.EncodeToString([]byte(userData))
+
 	runInput := &ec2.RunInstancesInput{
 		ImageId:        aws.String(imageID),
 		InstanceType:   aws.String(instanceType),

@@ -1,8 +1,8 @@
 package ec2
 
-import "encoding/base64"
+// import "encoding/base64"
 
-const userData = `Content-Type: multipart/mixed; boundary="//"
+const userDataTemplate = `Content-Type: multipart/mixed; boundary="//"
 MIME-Version: 1.0
 
 --//
@@ -27,7 +27,7 @@ curl -sL https://rpm.nodesource.com/setup_14.x | sudo -E bash -
 sudo yum install -y nodejs
 sudo npm install pm2 -g
 cd /home/ec2-user
-wget https://api-creator-generated-code-dev.s3.amazonaws.com/test20%40example.com/defaultProject.zip
+wget %s
 unzip defaultProject.zip
 cd defaultProject
 sudo pkill -f PM2
@@ -36,4 +36,4 @@ sudo pm2 save
 --//
 `
 
-var encUserData = base64.StdEncoding.EncodeToString([]byte(userData))
+// var encUserData = base64.StdEncoding.EncodeToString([]byte(userData))

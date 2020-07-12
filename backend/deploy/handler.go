@@ -2,6 +2,8 @@
 package deploy
 
 import (
+	"encoding/json"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/jackstenglein/rest_api_creator/backend/auth"
 	"github.com/jackstenglein/rest_api_creator/backend/dao"
@@ -9,6 +11,11 @@ import (
 	"github.com/jackstenglein/rest_api_creator/backend/http"
 	"github.com/jackstenglein/rest_api_creator/backend/log"
 )
+
+// deployRequest contains the fields passed in the API JSON request body.
+type deployRequest struct {
+	URL string `json:"url"`
+}
 
 // deployResponse contains the fields returned in the API JSON response body.
 type deployResponse struct {
@@ -36,9 +43,11 @@ func HandleDeploy(request events.APIGatewayProxyRequest) (events.APIGatewayProxy
 	// Get request parameters
 	projectID := request.PathParameters["pid"]
 	cookie := auth.ExtractCookie(request.Headers["Cookie"])
+	var deployRequest deployRequest
+	json.Unmarshal([]byte(request.Body), &deployRequest)
 
 	// Perform the action
-	instanceID, url, err := deploy(cookie, projectID, auth.VerifyCookie, dao.Dynamo, ec2.EC2)
+	instanceID, url, err := deploy(cookie, projectID, deployRequest, auth.VerifyCookie, dao.Dynamo, ec2.EC2)
 	log.Error(err)
 
 	// Return the response
