@@ -18,6 +18,7 @@ type deployDatabase interface {
 type deployer interface {
 	GetPublicURL(string) (string, error)
 	LaunchInstance(string) (string, string, error)
+	TerminateInstance(string) error
 }
 
 // deployProject launches an EC2 instance to run the given project. If the deployment is successful and the EC2 instance launches
@@ -45,6 +46,11 @@ func deployProject(cookie string, projectID string, deployRequest deployRequest,
 
 	if project.InstanceID != "" {
 		// TODO: terminate old instance
+		log.Info("Terminating old instance with id: ", project.InstanceID)
+		err = ec2.TerminateInstance(project.InstanceID)
+		if err != nil {
+			return "", "", errors.Wrap(err, "Failed to terminate original instance")
+		}
 	}
 
 	// Launch new instance

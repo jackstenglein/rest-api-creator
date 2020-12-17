@@ -1,7 +1,5 @@
 package ec2
 
-// import "encoding/base64"
-
 const userDataTemplate = `Content-Type: multipart/mixed; boundary="//"
 MIME-Version: 1.0
 
@@ -27,7 +25,7 @@ curl -sL https://rpm.nodesource.com/setup_14.x | sudo -E bash -
 sudo yum install -y nodejs
 sudo npm install pm2 -g
 cd /home/ec2-user
-wget %s
+wget -O defaultProject.zip "%s"
 unzip defaultProject.zip
 cd defaultProject
 sudo pkill -f PM2
@@ -35,5 +33,3 @@ sudo PORT=80 pm2 start app.js --name server
 sudo pm2 save
 --//
 `
-
-// var encUserData = base64.StdEncoding.EncodeToString([]byte(userData))

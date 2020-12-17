@@ -56,6 +56,7 @@ provider:
         - ec2:DescribeInstances
         - ec2:DescribeSecurityGroups
         - ec2:RunInstances
+        - ec2:TerminateInstances
       Resource: '*'
 
 custom:

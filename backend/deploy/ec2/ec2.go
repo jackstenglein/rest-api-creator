@@ -27,6 +27,7 @@ type service interface {
 	DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error)
 	DescribeSecurityGroups(*ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error)
 	RunInstances(*ec2.RunInstancesInput) (*ec2.Reservation, error)
+	TerminateInstances(*ec2.TerminateInstancesInput) (*ec2.TerminateInstancesOutput, error)
 }
 
 // defaultSvc is the service that actually queries EC2 and should be used in deployment.
@@ -171,6 +172,7 @@ func runInstance(projectURL string) (*ec2.Instance, error) {
 		MinCount:       aws.Int64(1),
 		UserData:       aws.String(encUserData),
 		SecurityGroups: []*string{aws.String(securityGroupName)},
+		// KeyName:        aws.String("test-keypair.pem"), //TODO remove this field, added to connect to instances
 	}
 	log.Info("Making call to RunInstances with input: ", runInput)
 
@@ -230,4 +232,19 @@ func shouldAddIngressRule(group *ec2.SecurityGroup) bool {
 	}
 
 	return false
+}
+
+func (deployer) TerminateInstance(instanceID string) error {
+	if instanceID == "" {
+		return nil
+	}
+
+	input := &ec2.TerminateInstancesInput{
+		InstanceIds: []*string{aws.String(instanceID)},
+	}
+
+	log.Info("Making call to TerminateInstance with input: ", input)
+	result, err := svc.TerminateInstances(input)
+	log.Info("Got TerminateInstances result:", result)
+	return errors.Wrap(err, "Failed call to TerminateInstances")
 }

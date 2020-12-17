@@ -1,6 +1,8 @@
 package ec2
 
 import (
+	"encoding/base64"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -8,6 +10,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/jackstenglein/rest_api_creator/backend/errors"
 )
+
+const testProjectURL = "testProjectURL"
+
+var testEncUserData = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(userDataTemplate, testProjectURL)))
 
 type mockService struct {
 	addIngressRuleInput *ec2.AuthorizeSecurityGroupIngressInput
@@ -30,6 +36,10 @@ type mockService struct {
 	runInstanceInput  *ec2.RunInstancesInput
 	runInstanceOutput *ec2.Reservation
 	runInstanceErr    error
+
+	terminateInstancesInput  *ec2.TerminateInstancesInput
+	terminateInstancesOutput *ec2.TerminateInstancesOutput
+	terminateInstancesErr    error
 }
 
 func (mock *mockService) AuthorizeSecurityGroupIngress(input *ec2.AuthorizeSecurityGroupIngressInput) (*ec2.AuthorizeSecurityGroupIngressOutput, error) {
@@ -72,6 +82,13 @@ func (mock *mockService) RunInstances(input *ec2.RunInstancesInput) (*ec2.Reserv
 		return nil, errors.NewServer("Incorrect input to RunInstances mock")
 	}
 	return mock.runInstanceOutput, mock.runInstanceErr
+}
+
+func (mock *mockService) TerminateInstances(input *ec2.TerminateInstancesInput) (*ec2.TerminateInstancesOutput, error) {
+	if !reflect.DeepEqual(input, mock.terminateInstancesInput) {
+		return nil, errors.NewServer("Incorrect input to TerminateInstances mock")
+	}
+	return mock.terminateInstancesOutput, mock.terminateInstancesErr
 }
 
 var describeInstanceTests = []struct {
@@ -340,11 +357,12 @@ var launchInstanceTests = []struct {
 			},
 			describeGroupOutput: &ec2.DescribeSecurityGroupsOutput{},
 			runInstanceInput: &ec2.RunInstancesInput{
-				ImageId:      aws.String(imageID),
-				InstanceType: aws.String(instanceType),
-				MaxCount:     aws.Int64(1),
-				MinCount:     aws.Int64(1),
-				UserData:     aws.String(encUserData),
+				ImageId:        aws.String(imageID),
+				InstanceType:   aws.String(instanceType),
+				MaxCount:       aws.Int64(1),
+				MinCount:       aws.Int64(1),
+				UserData:       aws.String(testEncUserData),
+				SecurityGroups: []*string{aws.String(securityGroupName)},
 			},
 			runInstanceErr: errors.NewServer("EC2 failure"),
 		},
@@ -369,11 +387,12 @@ var launchInstanceTests = []struct {
 			},
 			describeGroupOutput: &ec2.DescribeSecurityGroupsOutput{},
 			runInstanceInput: &ec2.RunInstancesInput{
-				ImageId:      aws.String(imageID),
-				InstanceType: aws.String(instanceType),
-				MaxCount:     aws.Int64(1),
-				MinCount:     aws.Int64(1),
-				UserData:     aws.String(encUserData),
+				ImageId:        aws.String(imageID),
+				InstanceType:   aws.String(instanceType),
+				MaxCount:       aws.Int64(1),
+				MinCount:       aws.Int64(1),
+				UserData:       aws.String(testEncUserData),
+				SecurityGroups: []*string{aws.String(securityGroupName)},
 			},
 			runInstanceOutput: &ec2.Reservation{},
 		},
@@ -398,11 +417,12 @@ var launchInstanceTests = []struct {
 			},
 			describeGroupOutput: &ec2.DescribeSecurityGroupsOutput{},
 			runInstanceInput: &ec2.RunInstancesInput{
-				ImageId:      aws.String(imageID),
-				InstanceType: aws.String(instanceType),
-				MaxCount:     aws.Int64(1),
-				MinCount:     aws.Int64(1),
-				UserData:     aws.String(encUserData),
+				ImageId:        aws.String(imageID),
+				InstanceType:   aws.String(instanceType),
+				MaxCount:       aws.Int64(1),
+				MinCount:       aws.Int64(1),
+				UserData:       aws.String(testEncUserData),
+				SecurityGroups: []*string{aws.String(securityGroupName)},
 			},
 			runInstanceOutput: &ec2.Reservation{
 				Instances: []*ec2.Instance{
@@ -431,11 +451,12 @@ var launchInstanceTests = []struct {
 			},
 			describeGroupOutput: &ec2.DescribeSecurityGroupsOutput{},
 			runInstanceInput: &ec2.RunInstancesInput{
-				ImageId:      aws.String(imageID),
-				InstanceType: aws.String(instanceType),
-				MaxCount:     aws.Int64(1),
-				MinCount:     aws.Int64(1),
-				UserData:     aws.String(encUserData),
+				ImageId:        aws.String(imageID),
+				InstanceType:   aws.String(instanceType),
+				MaxCount:       aws.Int64(1),
+				MinCount:       aws.Int64(1),
+				UserData:       aws.String(testEncUserData),
+				SecurityGroups: []*string{aws.String(securityGroupName)},
 			},
 			runInstanceOutput: &ec2.Reservation{
 				Instances: []*ec2.Instance{
@@ -474,11 +495,12 @@ var launchInstanceTests = []struct {
 			},
 			describeGroupOutput: &ec2.DescribeSecurityGroupsOutput{},
 			runInstanceInput: &ec2.RunInstancesInput{
-				ImageId:      aws.String(imageID),
-				InstanceType: aws.String(instanceType),
-				MaxCount:     aws.Int64(1),
-				MinCount:     aws.Int64(1),
-				UserData:     aws.String(encUserData),
+				ImageId:        aws.String(imageID),
+				InstanceType:   aws.String(instanceType),
+				MaxCount:       aws.Int64(1),
+				MinCount:       aws.Int64(1),
+				UserData:       aws.String(testEncUserData),
+				SecurityGroups: []*string{aws.String(securityGroupName)},
 			},
 			runInstanceOutput: &ec2.Reservation{
 				Instances: []*ec2.Instance{
@@ -518,11 +540,12 @@ var launchInstanceTests = []struct {
 			},
 			describeGroupOutput: &ec2.DescribeSecurityGroupsOutput{},
 			runInstanceInput: &ec2.RunInstancesInput{
-				ImageId:      aws.String(imageID),
-				InstanceType: aws.String(instanceType),
-				MaxCount:     aws.Int64(1),
-				MinCount:     aws.Int64(1),
-				UserData:     aws.String(encUserData),
+				ImageId:        aws.String(imageID),
+				InstanceType:   aws.String(instanceType),
+				MaxCount:       aws.Int64(1),
+				MinCount:       aws.Int64(1),
+				UserData:       aws.String(testEncUserData),
+				SecurityGroups: []*string{aws.String(securityGroupName)},
 			},
 			runInstanceOutput: &ec2.Reservation{
 				Instances: []*ec2.Instance{
@@ -572,11 +595,12 @@ var launchInstanceTests = []struct {
 				},
 			},
 			runInstanceInput: &ec2.RunInstancesInput{
-				ImageId:      aws.String(imageID),
-				InstanceType: aws.String(instanceType),
-				MaxCount:     aws.Int64(1),
-				MinCount:     aws.Int64(1),
-				UserData:     aws.String(encUserData),
+				ImageId:        aws.String(imageID),
+				InstanceType:   aws.String(instanceType),
+				MaxCount:       aws.Int64(1),
+				MinCount:       aws.Int64(1),
+				UserData:       aws.String(testEncUserData),
+				SecurityGroups: []*string{aws.String(securityGroupName)},
 			},
 			runInstanceOutput: &ec2.Reservation{
 				Instances: []*ec2.Instance{
@@ -602,7 +626,7 @@ func TestLaunchInstance(t *testing.T) {
 			}()
 
 			// Execute
-			id, url, err := EC2.LaunchInstance()
+			id, url, err := EC2.LaunchInstance(testProjectURL)
 
 			// Verify
 			if id != test.wantID {
@@ -727,6 +751,55 @@ func TestShouldAddIngressRule(t *testing.T) {
 			// Verify
 			if got != test.want {
 				t.Errorf("Got %v; want %v", got, test.want)
+			}
+		})
+	}
+}
+
+var terminateInstanceTests = []struct {
+	name       string
+	mock       *mockService
+	instanceID string
+	wantErr    error
+}{
+	{
+		name: "EmptyInstanceID",
+	},
+	{
+		name:       "ServiceFailure",
+		instanceID: "testInstanceID",
+		mock: &mockService{
+			terminateInstancesInput: &ec2.TerminateInstancesInput{
+				InstanceIds: []*string{aws.String("testInstanceID")},
+			},
+			terminateInstancesErr: errors.NewServer("EC2 service error"),
+		},
+		wantErr: errors.Wrap(errors.NewServer("EC2 service error"), "Failed call to TerminateInstances"),
+	},
+	{
+		name:       "SuccessfulInvocation",
+		instanceID: "testInstanceID",
+		mock: &mockService{
+			terminateInstancesInput: &ec2.TerminateInstancesInput{
+				InstanceIds: []*string{aws.String("testInstanceID")},
+			},
+		},
+		wantErr: nil,
+	},
+}
+
+func TestTerminateInstance(t *testing.T) {
+	for _, test := range terminateInstanceTests {
+		t.Run(test.name, func(t *testing.T) {
+			svc = test.mock
+			defer func() {
+				svc = defaultSvc
+			}()
+
+			err := EC2.TerminateInstance(test.instanceID)
+
+			if !errors.Equal(err, test.wantErr) {
+				t.Errorf("Got err `%v`; want `%v`", err, test.wantErr)
 			}
 		})
 	}
