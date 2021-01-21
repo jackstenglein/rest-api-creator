@@ -10,7 +10,7 @@
     "cross-fetch": "^3.0.4",
     "deep-equal": "^2.0.3",
     "file-saver": "^2.0.2",
-    "immer": "^6.0.3",
+    "immer": "^8.0.1",
     "ky": "^0.19.1",
     "react": "^16.8.6",
     "react-bootstrap": "^1.0.1",
